@@ -1,0 +1,13 @@
+# Pinned for reproducibility (Phase 1+). Python 3.12.
+scapy==2.7.0
+torch==2.6.0
+scikit-learn==1.5.2
+shap==0.52.0
+numpy>=2.0
+scipy>=1.13
+pandas>=2.2
+pytest>=8.0
+xgboost>=2.0
+captum>=0.7
+lime>=0.2
+matplotlib>=3.9
