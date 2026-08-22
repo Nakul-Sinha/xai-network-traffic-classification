@@ -9,3 +9,5 @@ __pycache__/
 *.pt
 *.pth
 Experiments/**/data/
+secrets.md
+
