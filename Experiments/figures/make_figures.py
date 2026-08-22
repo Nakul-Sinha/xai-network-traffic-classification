@@ -45,6 +45,22 @@ def fig1_operator_validity():
     return "fig1_operator_validity.png"
 
 
+def _multiseed_fc(fam, exp, tag, seeds=(0, 1, 2, 3, 4)):
+    vals = []
+    for s in seeds:
+        suf = "" if s == 0 else f"_seed{s}"
+        fp = os.path.join(AUD, f"audit_{tag}{suf}.json")
+        if not os.path.exists(fp):
+            continue
+        d = json.load(open(fp))
+        a = d[fam]["audit"].get(exp)
+        if a:
+            vals.append(a["false_confidence"])
+    if not vals:
+        return np.nan, np.nan, 0
+    return float(np.mean(vals)), float(np.std(vals, ddof=1) if len(vals) > 1 else 0.0), len(vals)
+
+
 def fig2_false_confidence():
     ps = [0.5, 0.7, 0.9, 1.0]
     tags = {0.5: "p05", 0.7: "p07", 0.9: "p09", 1.0: "p10"}
@@ -55,20 +71,21 @@ def fig2_false_confidence():
     colors = {"Saliency": "#d1495b", "IntegratedGradients": "#edae49", "DeepSHAP": "#2e86ab",
               "Occlusion": "#66a182", "Impurity": "#d1495b", "TreeSHAP": "#2e86ab"}
     fig, axes = plt.subplots(1, 2, figsize=(10, 3.8), sharey=True)
+    nseed = 1
     for ax, (fam, expls) in zip(axes, fam_expl.items()):
         for exp in expls:
-            ys = []
+            means, sds = [], []
             for p in ps:
-                d = json.load(open(os.path.join(AUD, f"audit_{tags[p]}.json")))
-                a = d[fam]["audit"].get(exp)
-                ys.append(a["false_confidence"] if a else np.nan)
-            ax.plot(ps, ys, "-o", label=exp, color=colors.get(exp), lw=2, ms=6)
+                m, sd, n = _multiseed_fc(fam, exp, tags[p])
+                means.append(m); sds.append(sd); nseed = max(nseed, n)
+            ax.errorbar(ps, means, yerr=sds, fmt="-o", label=exp, color=colors.get(exp),
+                        lw=2, ms=6, capsize=3, elinewidth=1.2)
         ax.set_xlabel("planting strength p")
         ax.set_title("ByteCNN" if fam == "cnn" else "RandomForest")
-        ax.set_ylim(-0.05, 0.9); ax.set_xticks(ps)
+        ax.set_ylim(-0.1, 1.0); ax.set_xticks(ps)
         ax.legend(fontsize=8, loc="upper right")
     axes[0].set_ylabel("false-confidence rate")
-    fig.suptitle("E4: explainer false-confidence vs planting strength (seed 0)", y=1.02)
+    fig.suptitle(f"E4: explainer false-confidence vs planting strength (mean +/- sd, {nseed} seeds)", y=1.02)
     fig.savefig(os.path.join(OUT, "fig2_false_confidence.png"))
     plt.close(fig)
     return "fig2_false_confidence.png"

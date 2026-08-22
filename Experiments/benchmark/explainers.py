@@ -126,8 +126,16 @@ def audit(field_scores, N, k=2, tau=0.05):
     smax = a.max() if a.max() > 0 else 1.0
     named = [f for f in fields if field_scores[f] >= 0.2 * smax]
     p_at_k = len([f for f in topk if N[f] > tau]) / k
+    # adaptive-k precision: k' = number of truly-necessary fields (>=1). This is the honest
+    # "does the explainer rank the model's real shortcut(s) at the top" metric; the fixed-k=2
+    # precision_at_k above quantizes to 0.5 when only one field is necessary and must NOT be cited
+    # as 1.0. See PHASE34-VERIFICATION fix #3.
+    kk = max(1, len(needed))
+    topkk = order[:kk]
+    p_at_adaptive_k = len([f for f in topkk if N[f] > tau]) / kk
     false_conf = (len([f for f in named if N[f] <= tau]) / len(named)) if named else 0.0
     blind = (len([f for f in needed if f not in topk]) / len(needed)) if needed else 0.0
     return {"rho": round(rho, 3), "precision_at_k": round(p_at_k, 3),
+            "precision_at_adaptive_k": round(p_at_adaptive_k, 3), "adaptive_k": kk,
             "false_confidence": round(false_conf, 3), "blind_spot": round(blind, 3),
             "top_k": topk, "named": named}

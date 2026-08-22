@@ -36,13 +36,15 @@ promoted to the paper until a fresh adversarial team reproduces them.
 | - | Phase 0 compute/plan | DONE | Analysis/00-compute-decision.md | n/a |
 | - | Phase 1 PacketDO + E1 | DONE | packetdo/, Analysis/E1-*.md | PASS_WITH_ISSUES -> fixed |
 | ORG-B | Phase 2 synthetic benchmark (E2/E3/E4) | DONE (seed 0) | benchmark/, Analysis/E2-E4-*.md | pending multi-seed |
-| ORG-B | multi-seed robustness (5 seeds) | RUNNING | benchmark/results/audit_*_seed*.json | - |
-| ORG-B | E5 operator sensitivity | QUEUED | - | - |
-| ORG-B | extra explainers (KernelSHAP, LIME) | QUEUED | - | - |
-| ORG-A | CIC-IDS2017 flow data + natural artifacts | LAUNCHING | Experiments/realdata/ | - |
-| ORG-A | byte-level dataset (USTC/ISCX) | LAUNCHING | - | - |
-| ORG-C | verify Phase 2 + real-data | QUEUED | Analysis/*-VERIFICATION.md | - |
-| ORG-D | editorial package | QUEUED | Working/ | - |
+| ORG-B | multi-seed robustness (5 seeds) | DONE | benchmark/results/audit_*_seed*.json, robustness.md | ORG-C PASS |
+| ORG-B | E5 operator sensitivity | DONE | results/e5_operator_sensitivity.* | ORG-C PASS |
+| ORG-B | extra explainers (KernelSHAP, LIME) | DONE | results/extra_explainers.* | ORG-C PASS |
+| ORG-A | CIC-IDS2017 flow data + natural artifacts | DONE | Experiments/realdata/ | ORG-C PASS (seed-0) |
+| ORG-A | byte-level dataset (USTC/ISCX) | DEFERRED | needs PCAP parcel | - |
+| ORG-C | verify Phase 3-4 | DONE | Analysis/PHASE34-VERIFICATION.md | PASS_WITH_ISSUES, provenance clean |
+| ORG-E | citation hardening | DONE | Working/references.bib (55) | self |
+| fixes | apply ORG-C 12-item must-fix list | DONE | paper-draft + analysis + code | - |
+| ORG-D | editorial package (assemble full manuscript) | NEXT | Working/ | - |
 
 ## Orchestrator activity log
 

@@ -45,25 +45,31 @@ finding.
 Gradients, DeepSHAP, Occlusion, RF impurity, TreeSHAP - correctly ranks the model's actual shortcut
 among its top-k features. Post-hoc explanation is *not* failing to find the truth.
 
-**False-confidence is high and method-dependent** (fraction of confidently-attributed fields whose
-interventional necessity is ~0):
+**False-confidence is high and method-dependent.** The tables below are the SEED-0 values and are
+SUPERSEDED by the multi-seed (n=5) values in the "Multi-seed update" section further down; do NOT
+copy the seed-0 tables into the paper. In particular the seed-0 zeros for IG at p=1.0 and DeepSHAP
+across p are NOT robust (IG p=1.0 -> 0.300+/-0.274; DeepSHAP p=0.5 -> 0.233+/-0.325). Retained only to
+show the per-strength shape on one seed:
 
-| explainer (ByteCNN) | p=0.5 | p=0.7 | p=0.9 | p=1.0 |
+| explainer (ByteCNN) SEED 0 ONLY - superseded | p=0.5 | p=0.7 | p=0.9 | p=1.0 |
 |---|---|---|---|---|
 | Saliency | 0.80 | 0.75 | 0.75 | 0.67 |
-| Integrated Gradients | 0.75 | 0.67 | 0.50 | 0.00 |
-| DeepSHAP | 0.00 | 0.00 | 0.00 | 0.00 |
-| Occlusion | 0.00 | 0.00 | 0.00 | 0.00 |
+| Integrated Gradients | 0.75 | 0.67 | 0.50 | 0.00 (NOT robust: 0.300+/-0.274 over 5 seeds) |
+| DeepSHAP | 0.00 (NOT robust: 0.233+/-0.325 at p=0.5) | 0.00 | 0.00 | 0.00 |
+| Occlusion | 0.00 | 0.00 | 0.00 | 0.00 (clean 5/5, but partly by construction - see caveat) |
 
-| explainer (RandomForest) | p=0.5 | p=0.7 | p=0.9 | p=1.0 |
+| explainer (RandomForest) SEED 0 ONLY - superseded | p=0.5 | p=0.7 | p=0.9 | p=1.0 |
 |---|---|---|---|---|
 | Impurity | 0.63 | 0.00 | 0.33 | 0.50 |
-| TreeSHAP | 0.00 | 0.00 | 0.33 | 0.50 |
+| TreeSHAP | 0.00 | 0.00 | 0.33 | 0.50 (multi-seed: 0.200+/-0.274, bimodal - conditional on model commitment) |
 
 ## What this says (the precise, defensible claim)
 
 1. **The danger is not missed truth, it is added falsehood.** Explainers reliably surface the field
-   the model uses (precision@k = 1.0), but gradient saliency and, at weak planting, Integrated
+   the model uses (precision at k = number-of-necessary-fields is 1.0; note the stored
+   `precision_at_k` JSON field uses a hard-coded k=2 and reads 0.5 because the CNN has only one
+   necessary field, so cite the adaptive-k convention, not the raw JSON value), but gradient saliency
+   and, at weak planting, Integrated
    Gradients *also* attribute large importance to a redundant field the model provably does not use
    (`N ~ 0`). An analyst reading the map cannot tell the used field from the merely-correlated one.
 2. **Exactness does not rescue faithfulness.** TreeSHAP computes exact Shapley values, yet at `p=1.0`
