@@ -1,0 +1,402 @@
+{
+  "summary": "Read the selected corpus papers end-to-end in batches and extract methods, explanation-evaluation practice, limitations and gaps",
+  "agentCount": 14,
+  "logs": [
+    "read complete: 13/13 batches",
+    "papers: 78, full-text: 70",
+    "ground-truth census: {\"none\":50,\"synthetic\":9,\"architectural\":5,\"human_expert\":8,\"interventional\":5,\"other\":1}"
+  ],
+  "result": {
+    "batches_done": 13,
+    "papers_read": 78,
+    "full_text": 70,
+    "ground_truth_census": {
+      "none": 50,
+      "synthetic": 9,
+      "architectural": 5,
+      "human_expert": 8,
+      "interventional": 5,
+      "other": 1
+    },
+    "gaps": [
+      {
+        "gap": "G1: No injected-shortcut (synthetic) ground-truth benchmark for NTC explanations — the Zhou/BAM/Bastings recipe (inject known artifact, reassign labels, verify model reliance behaviorally, score explainers on recovery) has never been instantiated on any traffic representation (bytes, size/timing sequences, flow features, traffic graphs)",
+        "evidence": "Zhou AAAI'22 and Bastings EMNLP'22 explicitly limited to images/text; BAM and Debugging Tests use image-only construction primitives; COMST survey: 0/51 datasets carry explanation GT, only 5/107 XAI-NTA papers use any quality metric; ShortcutCatcher and BiasSeeker plant/hunt shortcuts but use XAI only as an unvalidated ranking heuristic and never invert the construction to score explainers",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "3-5 months (public ISCX/CICIDS-class data, small models, single GPU)",
+        "risk": "Low-medium: PoliTO group (ShortcutCatcher/Pcap-Encoder, CoNEXT/SIGCOMM 2025-26) is the fastest-moving adjacent lane but has not scored explainers against planted GT; monitor for concurrent work"
+      },
+      {
+        "gap": "G2: No architectural (transparent-by-construction) ground truth over traffic-like data — no SENECA-style generator or known-decision-basis models for traffic feature spaces (bounded counts, heavy tails, multicollinearity, discrete byte alphabets)",
+        "evidence": "Guidotti 2021 (SENECA) is tabular-generic with no NTC instantiation; Fooling-LIME/SHAP's one-feature classifier template never applied to traffic; OpenXAI GT saturates on LR (three methods at 1.000); LEXNet's only NTC attempt is circular (own prototypes declared faithful by definition); Kitsune's per-AE RMSE subspaces are an unexploited built-in attribution mechanism",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-4 months",
+        "risk": "Low; caveat: Guidotti 2021 full text unobtained this session — pull before citing"
+      },
+      {
+        "gap": "G3: Documented dataset artifacts never used as a real-data explanation recovery benchmark ('tank test') — known artifacts (CICIDS2017 TCP-appendix flows, SeqNo/AckNo/TCP-TS flow-ID bytes, PCAP-metadata/port biases, nPrint Nmap shortcut) are interventionally verified decision bases that no explainer has ever been scored on recovering",
+        "evidence": "Engelen: 25.9% artifact flows + corrected-vs-original CICIDS2017 pair unused as benchmark; Pcap-Encoder: randomizing SeqNo/AckNo/timestamps collapses ET-BERT 97.4->19.5 (verified reliance) yet no explainer scored; Aceto's known byte-location biases found by manual ablation, 'unexploited to date'; Sommer & Paxson's orthogonal-mechanism doctrine never operationalized for XAI",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months; publishes naturally with G1 as one benchmark paper",
+        "risk": "Low: closest work (Trustee tampering, netUnicorn) are one-off diagnostics, not explainer scoring"
+      },
+      {
+        "gap": "G4: No faithfulness protocol valid for discrete, protocol-constrained traffic inputs — deletion/occlusion metrics create protocol-invalid flows (zero is a valid byte, no blur analogue), ROAR is compute-prohibitive and pixel-centric, ROAD's imputation is image-specific; no grammar-valid, minimally-class-revealing removal operator exists, and networking's unique interventional handle (replaying modified valid packets) is unexploited",
+        "evidence": "ROAR never adapted to packet/flow inputs (batch 0); ROAD authors note Noisy Linear Imputation relies on pixel neighborhoods and fixed-value/zero masking (the NTC default) is provably worst; Samek's own appendix shows ABPC swinging 113.75-243.69 with removal scheme, rankings never tested across operators in NTC; RISE fill strategy chosen because it 'gives higher scores'",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "3-5 months (ROAD-style variant avoids retraining; scoped ROAR feasible on small models)",
+        "risk": "Low: no traffic port found in corpus or citation neighborhoods"
+      },
+      {
+        "gap": "G5: Faithfulness metrics themselves never meta-evaluated in NTC — no diagnosticity-style test (does the metric rank a known-faithful explanation above a known-unfaithful one?) has been run on any traffic metric, model, or representation",
+        "evidence": "Zaman & Srivastava EMNLP'25 find popular metrics at chance, NLP-only; Hedstrom sMPRT/eMPRT validated only by another consistency proxy (infinite regress); Quantus shows one parameter flips rankings; Tomsett: Krippendorff alpha <0.48 and MoRF/LeRF reversals in exactly the metric family NTC imports; batch 12: 'metric meta-evaluation is entirely absent in NTC'",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-4 months on top of G1/G3 infrastructure",
+        "risk": "Low: causal-diagnosticity is brand new and unported to any security domain"
+      },
+      {
+        "gap": "G6: Sanity-check and reliability batteries (parameter/data randomization, input invariance, adversarial attention, infidelity/max-sensitivity) never run on NTC model classes (byte transformers, 1D-CNNs, AE-NIDS, traffic GNNs) — and the port is non-mechanical because conclusions are modality-dependent",
+        "evidence": "Adebayo checks are image-specific (SSIM/HOG have no byte-matrix analogue); Captum study shows image conclusions do not transfer to text; Yona/Greenfeld show the randomization check is task-confounded; NTC papers display attention heatmaps and bit-level importances with zero falsification (ET-BERT, nPrint, PERT); nobody has run Tomsett reliability checks on NTC saliency metrics",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months",
+        "risk": "Low-medium: most obvious port on the list, but absent across all 78 papers and the survey's 107"
+      },
+      {
+        "gap": "G7: Explanation disagreement unquantified on traffic, where multicollinearity should make it worst — and inter-method agreement is still used as validation in NTC, a formally rejected practice",
+        "evidence": "Krishna et al. disagreement study has no networking data or security practitioners; SoK measured 25.5% SHAP/LIME top-3 disagreement on NetFlows with no arbiter; Neely et al.: mean Kendall-tau 0.27, agreement is not evaluation; Wang IEEE Access 2020 uses a 73% 'coincidence rate' with a decision tree as correctness; multicollinearity-fragility paper shows correlated features destabilize attributions, single dataset only",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months",
+        "risk": "Medium for the descriptive port (disagreement studies are fashionable); low for the GT-anchored resolution (which explainer is actually right), which requires Theme-A machinery nobody has"
+      },
+      {
+        "gap": "G8: Redundancy makes single-explanation evaluation ill-posed (fidelity != completeness) — traffic data encodes the same signal redundantly (SeqNo/AckNo/TCP-TS), so explainers pointing at different-but-sufficient bases are misscored and perfect-fidelity surrogates miss alternative shortcuts; no multiplicity-aware (Rashomon-set) evaluation exists for traffic models",
+        "evidence": "Trustee's 3-node DT had perfect F1 fidelity yet tampering its 3 bytes left black-box accuracy unchanged (alternative shortcuts); ROAR's redundancy caveat; BiasSeeker's occlusion paradox (accuracy improves after removal); Neely: agreement metrics conflate explanation multiplicity with error",
+        "solvable_solo": "partly",
+        "ml_layer": "yes",
+        "effort": "4-6 months; exhaustive subset enumeration on deep byte models is compute-heavy, must scope to flow-feature models",
+        "risk": "Low: Rashomon literature exists in interpretable-ML theory but no traffic/security instantiation appeared in the corpus"
+      },
+      {
+        "gap": "G9: Dataset artifacts x explanations — proxy metrics reward explanations that faithfully point at benchmark artifacts, and plausibility checks are confounded because wrong features genuinely predict in-lab; no systematic re-audit of published XAI-NIDS findings on corrected datasets exists",
+        "evidence": "Engelen: 25.9% of CICIDS2017 flows are artifacts with shortcut features dominating RF importance while 0.99 F1 masks it; E-XAI/nPrint/DeepAID evaluate explanations on exactly these datasets; McHugh/Mahoney-Chan: DARPA/KDD lineage rewards artifact features (one-byte detector matches top 1999 systems) so two unvalidated layers compound; Lucid celebrates apparent dataset shortcuts as correct learning",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months (corrected-vs-original CICIDS2017 pair is public, making it a controlled experiment)",
+        "risk": "Low: dataset critiques exist but the interaction with explanation evaluation is claimed by no one in 78 papers"
+      },
+      {
+        "gap": "G10: NTC input representations are attribution-hostile and nobody audits this axis — representation choices made for accuracy destroy attributability by construction, and every downstream saliency map inherits them unexamined",
+        "evidence": "TFE-GNN collapses all identical byte values into one graph node (per-position attribution impossible by construction); ET-BERT/PERT bigram hex tokens semantically opaque to analysts; byte-to-grayscale reshaping (Wang 2017 lineage) imports 2D-locality assumptions traffic lacks; McHugh's unresolved per-packet vs per-flow unit-of-analysis question determines what attribution can mean; FlowPic sold on interpretability, never validated",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months; viable as a survey-paper section even without new experiments",
+        "risk": "Low: no prior articulation found anywhere in the corpus"
+      },
+      {
+        "gap": "G11: No temporal-drift-aware explanation evaluation — no 'AUT for explanations', no faithfulness notion for explanation deltas under drift, while explanations computed on randomly-split NTC models explain temporal-bias artifacts",
+        "evidence": "TESSERACT: F1 collapses 0.97->0.32 under realistic temporal splits, yet ET-BERT/FS-Net/Deep Packet/YaTC all use random splits; batch 0 note: 'no metric like an AUT for explanation stability over time exists'; INSOMNIA validates drift explanations only by plausibility narrative (Idle Max/Slowloris); CADE's fidelity metric is the quantity its explainer optimizes; COMST flags incremental-training XAI as beyond current tools",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "3-5 months (public longitudinal data: CESNET spans months)",
+        "risk": "Low: named as open by two independent in-corpus sources, claimed by nobody"
+      },
+      {
+        "gap": "G12: Plausibility/faithfulness conflation is systemic in NTC and no domain formalization or scored expert-plausibility instrument exists — expert-knowledge matching is used as faithfulness evidence throughout, which is uniquely dangerous where wrong features are genuinely predictive in-lab; protocol grammar gives traffic an objective rubric basis images lack",
+        "evidence": "Jacovi & Goldberg forbid human judgement for faithfulness (consequence 'drawn by nobody' for NTC); violations: Lucid narrative, nPrint folklore checks, DeepAID 2-3 anecdotes, Wang 2020 attack tables, Kalakoti's global SOC mask applied to local explanations with impossible RMA sigmas; Mahoney & Chan's 2003 per-attack feature-legitimacy rubric is a never-adopted scored-plausibility template; Tomsett's rule-generated GT failed for images but protocol fields have RFC-defined semantics",
+        "solvable_solo": "partly",
+        "ml_layer": "yes",
+        "effort": "3-4 months; formalization and faithfulness axis fully solo, credible multi-rater rubric scoring needs 3-5 domain colleagues",
+        "risk": "Low: the distinction is canonical in NLP, its NTC operationalization appears nowhere"
+      },
+      {
+        "gap": "G13: Analyst-grounded human evaluation of NTC explanations is absent exactly where analysts are the stated beneficiary — no SOC-analyst user study exists, and the best-validated protocol (simulatability) is structurally unavailable for raw-byte inputs",
+        "evidence": "SoK: user studies in 14% of security-XAI works, median n=8, none in NTC; EXP-SEC's analyst module gets three hand-crafted vignettes, zero measurement; Trustee defers user studies to future work; Hase & Bansal simulatability presupposes human-legible features and used undergraduates; Debugging Tests found users ignore attributions — untested where it matters most",
+        "solvable_solo": "no",
+        "ml_layer": "yes",
+        "effort": "6-12 months with collaborators (analyst recruitment, ethics process exceed the solo/public-data envelope)",
+        "risk": "Low that it gets solved soon (structural barriers affect everyone); frame as open problem in the paper, not a contribution"
+      },
+      {
+        "gap": "G14: Adversarial robustness of NTC explainers under protocol-valid, verdict-preserving perturbation is unstudied — including triage-misdirection attacks that shift the explanation while keeping the alert",
+        "evidence": "Fooling-LIME/SHAP's OOD-sampling exploit should be aggravated in traffic (perturbed packets protocol-invalid) yet never instantiated against a traffic explainer; S&P SoK attack taxonomy contains no traffic explainer and its certified-robustness results explicitly fail for discrete inputs like bytes; Ghorbani-style attacks unported; EXP-SEC concedes perturbation-probing evasion; robustness conflated with correctness throughout (robustly-wrong explainers pass)",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "3-4 months (reuses G4 perturbation operators)",
+        "risk": "Low-medium: adversarial-XAI community is active; protocol-validity constraint and triage threat model are the defensibly novel parts"
+      },
+      {
+        "gap": "G15: XAI-as-shortcut-auditor is itself unvalidated (the Arp circularity) — the prescribed remedy for spurious correlations is XAI, but no NTC shortcut-detection pipeline ablates its explainer against random/MI baselines or scores it against planted ground truth",
+        "evidence": "Arp et al.: unvalidated explainers audit models with no auditor for XAI; ShortcutCatcher's explainer is a replaceable ranking heuristic (no ablation vs random/MI; cardinality-biased impurity importance over-ranks exactly the max-cardinality shortcut fields); BiasSeeker's occlusion validation is undermined by its own paradoxical results; vision evidence is negative (Zhou ~69% attribution mass; Debugging Tests: attributions miss mislabeling) and untested on traffic",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months on G1/G3 infrastructure",
+        "risk": "Medium: this is ShortcutCatcher/BiasSeeker's lane and their next papers could add the missing ablation; the GT-anchored explainer-scoring framing remains unclaimed — move fast or cite-and-frame"
+      },
+      {
+        "gap": "G16: Metric-definition anarchy and statistical malpractice in published XAI-NTC evaluations — no harmonized definitions, reporting protocol, or Quantus-equivalent toolkit exists for traffic",
+        "evidence": "COMST: 17 metric definitions with same names and different meanings, only 3 tools implement any; Traffic-Explainer's printed Fid/Acc formulas are identical and its C-Fid definition rewards useless explanations while the explainer optimizes near-identical quantities to its metrics; Kalakoti reports impossible sigmas (up to 25 on a [0,1] metric); E-XAI significance-tests classifier accuracy instead of XAI metrics; EXP-SEC's 'true causal groups' never defined; single-seed evaluations are the norm despite Bastings showing configuration determines outcomes",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "2-3 months; natural backbone section of the journal survey plus a small open toolkit",
+        "risk": "Low: COMST tabulated the inconsistency but fixed nothing"
+      },
+      {
+        "gap": "G17: Behavioral/transfer oracles for explanation validity unexploited — explanations make falsifiable cross-dataset transfer predictions (transferable-semantics features should transfer, artifact features should not) and networking uniquely has aligned same-task cross-dataset frameworks to test them",
+        "evidence": "'One task' paper's aligned CESNET/Orange framework flagged in notes as 'an unexploited behavioral oracle for explanation faithfulness'; that paper names explainability as the diagnostic bottleneck yet does failure analysis by manual feature statistics; operationalizes Sommer & Paxson's orthogonal-mechanism doctrine for explanations rather than detectors; no citation trail claims the idea",
+        "solvable_solo": "yes",
+        "ml_layer": "yes",
+        "effort": "3-4 months (CESNET public; substitute a second public corpus for Orange)",
+        "risk": "Low: idea appears only as an original note in this corpus review"
+      }
+    ]
+  },
+  "workflowProgress": [
+    {
+      "type": "workflow_phase",
+      "index": 1,
+      "title": "Read"
+    },
+    {
+      "type": "workflow_phase",
+      "index": 2,
+      "title": "Distill"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 1,
+      "label": "read:b0",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a1a16b556007b4893",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455103,
+      "lastProgressAt": 1787406455103,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"ET-BERT: A Contextualized Datagram Representation with Pre-training Transformers for Encrypted Traffic Classification\",\"read_depth\":\"html_partial\",\"task\":\"Encrypted traffic classification: app identification, VPN/Tor service and app classification, malware traffic (7 tasks)\",\"model\":\"BERT-style transformer (12 blocks, 12 heads, H=768), pre-trained on ~30GB unlabeled traff…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][0],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 2,
+      "label": "read:b1",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a8c29538254c3bbab",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455103,
+      "lastProgressAt": 1787406455103,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"CADE: Detecting and Explaining Concept Drift Samples for Security Applications (USENIX Security 2021)\",\"read_depth\":\"full_text\",\"task\":\"Drift (OOD) sample detection + per-sample explanation for security classifiers: Android malware family attribution (Drebin) and network intrusion detection (IDS2018); industry PE-malware test (Blue Hexagon, 395 families)\",\"datasets\":\"Dreb…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][1],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 3,
+      "label": "read:b2",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "aa573e2704862d722",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455104,
+      "lastProgressAt": 1787406455104,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"E-XAI: Evaluating Black-Box Explainable AI Frameworks for Network Intrusion Detection\",\"read_depth\":\"full_text\",\"task\":\"Multi-class network intrusion detection (attack-type classification of flows); framework for evaluating black-box XAI methods for network IDS\",\"model\":\"Seven black-box models: RF, DNN, AdaBoost, MLP, KNN, SVM, LightGBM (+ CNN added as extra experiment)\",…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][2],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 4,
+      "label": "read:b3",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "aa44781918d469675",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455104,
+      "lastProgressAt": 1787406455104,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"Bias in the Shadows: Explore Shortcuts in Encrypted Network Traffic Classification (BiasSeeker)\",\"read_depth\":\"full_text\",\"task\":\"Model-agnostic, data-centric detection and categorization of shortcut features in encrypted NTC across three tasks: VPN classification, malware traffic classification, encrypted application classification\",\"model\":\"Framework is model-agnostic (…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][3],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 5,
+      "label": "read:b4",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a703158e851ba99f4",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455104,
+      "lastProgressAt": 1787406455104,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"Building Transparency in Deep Learning-Powered Network Traffic Classification: A Traffic-Explainer Framework\",\"read_depth\":\"full_text\",\"task\":\"Network traffic classification explanation across 3 tasks: application classification (byte sequences), traffic localization (country of origin), network cartography (traceroute RTT -> submarine cable mapping)\",\"model\":\"Transformer…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][4],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 6,
+      "label": "read:b5",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a56112e0f5cebe8be",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455104,
+      "lastProgressAt": 1787406455104,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"GNNExplainer: Generating Explanations for Graph Neural Networks (NeurIPS 2019, arXiv:1903.03894)\",\"read_depth\":\"full_text\",\"task\":\"Explaining any message-passing GNN; benchmarks on node classification (synthetic motif graphs) and graph classification (molecules, Reddit threads). Not traffic itself, but the default explainer reused by GNN-based NTC/NIDS papers.\",\"model\":\"A…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][5],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 7,
+      "label": "read:b6",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "af5767466b9d98716",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455105,
+      "lastProgressAt": 1787406455105,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"CF-GNNExplainer: Counterfactual Explanations for Graph Neural Networks\",\"read_depth\":\"full_text\",\"task\":\"Explaining GNN node-classification predictions via counterfactuals (minimal edge deletions that flip the prediction); not traffic, but methodology relevant to graph-based NTC\",\"model\":\"3-layer GCN (hidden size 20, >=87% test accuracy), Ying et al. (2019) setup; explain…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][6],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 8,
+      "label": "read:b7",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a9904e588c50197d1",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455105,
+      "lastProgressAt": 1787406455105,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"The (Un)reliability of Saliency Methods\",\"read_depth\":\"full_text\",\"task\":\"XAI methodology (image classification testbed): testing whether saliency methods satisfy an 'input invariance' axiom under a constant input shift\",\"model\":\"3-layer MLP, 1024 ReLU units/layer (MNIST, 98.3% acc, identical for both constructed networks); VGG16/ImageNet only for reference-point illustra…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][7],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 9,
+      "label": "read:b8",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a739f90082c15aaf9",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455105,
+      "lastProgressAt": 1787406455105,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"OpenXAI: Towards a Transparent Evaluation of Model Explanations\",\"read_depth\":\"full_text\",\"task\":\"Benchmark framework for post hoc feature-attribution explanations on tabular binary classification (finance, healthcare, criminal justice)\",\"model\":\"Logistic regression + 2-hidden-layer ANN (100 ReLU units/layer) per dataset; 16 pre-trained models total\",\"datasets\":\"SynthGaus…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][8],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 10,
+      "label": "read:b9",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a2ac835770853c259",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455105,
+      "lastProgressAt": 1787406455105,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"Evaluating the Visualization of What a Deep Neural Network Has Learned (Samek et al., IEEE TNNLS 2017 / arXiv:1509.06321)\",\"read_depth\":\"full_text\",\"task\":\"Image classification explanation evaluation (foundational XAI-evaluation methodology paper, not NTC); proposes objective heatmap quality measurement\",\"model\":\"Unmodified pretrained CNNs: MIT Places CNN, Caffe reference…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][9],in…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 11,
+      "label": "read:b10",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "a7e371fab6401831d",
+      "model": "fable",
+      "state": "done",
+      "startedAt": 1787406455105,
+      "lastProgressAt": 1787406455105,
+      "cached": true,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"Robust Network Traffic Classification (Zhang, Chen, Xiang, Zhou, Wu; IEEE/ACM ToN 2015)\",\"read_depth\":\"full_text\",\"task\":\"Flow-statistics traffic classification robust to zero-day applications: N known classes + generic unknown class, plus fine-grained new-class learning via system update (TCP flows only)\",\"model\":\"RTC scheme: two-step unknown discovery (k-means clusters …",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][10],i…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 12,
+      "label": "read:b11",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "afa1063eb808fa861",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1787406457371,
+      "queuedAt": 1787406455106,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "Batch 11 pairs the field's two key XAI-evaluation methodolo…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][11],i…",
+      "lastProgressAt": 1787407162621,
+      "tokens": 199116,
+      "toolCalls": 41,
+      "durationMs": 705247,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"Do Feature Attribution Methods Correctly Attribute Features? (Zhou, Booth, Ribeiro, Shah; AAAI 2022)\",\"read_depth\":\"full_text\",\"task\":\"Meta-evaluation of feature attribution methods on image classification (custom 8-class bird dataset) and text classification (modified BeerAdvocate); not NTC but the key ground-truth-construction methodology paper\",\"model\":\"ResNet-34 (from…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 13,
+      "label": "read:b12",
+      "phaseIndex": 1,
+      "phaseTitle": "Read",
+      "agentId": "aac3314e618b47614",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1787406458673,
+      "queuedAt": 1787406455106,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "This batch spans the full ladder of ground-truth strength f…",
+      "promptPreview": "You are a careful academic reader building notes for a journal paper on EXPLAINABLE AI FOR NETWORK TRAFFIC CLASSIFICATION.\n\nSTEP 1. Get your batch. Run this Bash command to print the papers assigned to you:\n    python -c \"import json;d=json.load(open(r'C:\\Users\\nakul\\OneDrive\\Desktop\\Academics\\xai-ntc-research\\analysis\\deepread-selection.json',encoding='utf-8'));print(json.dumps(d['batches'][12],i…",
+      "lastProgressAt": 1787407412184,
+      "tokens": 175592,
+      "toolCalls": 59,
+      "durationMs": 953511,
+      "resultPreview": "{\"papers_read\":[{\"title\":\"\\\"Will You Find These Shortcuts?\\\" A Protocol for Evaluating the Faithfulness of Input Salience Methods for Text Classification (Bastings et al., EMNLP 2022)\",\"read_depth\":\"full_text\",\"task\":\"Binary text classification (sentiment, toxicity) in a model-debugging scenario: can salience methods find lexical shortcuts the model learned?\",\"model\":\"biLSTM with GloVe embeddings;…"
+    },
+    {
+      "type": "workflow_agent",
+      "index": 14,
+      "label": "distill:gaps",
+      "phaseIndex": 2,
+      "phaseTitle": "Distill",
+      "agentId": "a49488751f443a5f6",
+      "model": "claude-fable-5",
+      "state": "done",
+      "startedAt": 1787407418520,
+      "queuedAt": 1787407414274,
+      "attempt": 1,
+      "lastToolName": "StructuredOutput",
+      "lastToolSummary": "13 batches, 78 papers, 70 read in full text. Ground-truth-u…",
+      "promptPreview": "Distil research gaps for a journal paper on explainable AI for network traffic classification.\n\nReading notes from 13 batches (78 papers, 70 read in full text).\nGround-truth-usage census across all papers read: {\"none\":50,\"synthetic\":9,\"architectural\":5,\"human_expert\":8,\"interventional\":5,\"other\":1}\n\n--- batch (6 papers) ---\nThis batch splits cleanly into three NTC classifier papers with zero expl…",
+      "lastProgressAt": 1787407776041,
+      "tokens": 77932,
+      "toolCalls": 3,
+      "durationMs": 357520,
+      "resultPreview": "{\"gaps\":[{\"gap\":\"G1: No injected-shortcut (synthetic) ground-truth benchmark for NTC explanations — the Zhou/BAM/Bastings recipe (inject known artifact, reassign labels, verify model reliance behaviorally, score explainers on recovery) has never been instantiated on any traffic representation (bytes, size/timing sequences, flow features, traffic graphs)\",\"evidence\":\"Zhou AAAI'22 and Bastings EMNLP…"
+    }
+  ],
+  "totalTokens": 452640,
+  "totalToolCalls": 103
+}
