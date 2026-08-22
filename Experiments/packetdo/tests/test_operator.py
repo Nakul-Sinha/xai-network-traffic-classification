@@ -120,6 +120,37 @@ def test_absent_field_is_noop():
     assert vd.valid(raw)
 
 
+def test_ip_proto_is_dependent():
+    """ip.proto is NOT independently intervenable (structural, tied to the L4 header)."""
+    assert "ip.proto" not in F.INTERVENABLE
+    assert "ip.proto" in F.RECOMPUTED
+    # setting proto=17 (UDP) on a packet whose L4 bytes are TCP yields an inconsistent packet:
+    # the TCP layer can no longer be parsed and the packet is invalid. This is exactly why
+    # ip.proto is not a free degree of freedom - it is fixed by the L4 header.
+    pkt = tcp_pkt()
+    p = pkt.copy()
+    p[IP].proto = 17
+    raw = bytes(op._rebuild(p))
+    reparsed = IP(raw)
+    assert reparsed.proto == 17          # forced value persists in the bytes
+    assert TCP not in reparsed           # but the TCP layer is now unparseable
+    assert not vd.valid(raw)             # -> not a self-consistent packet
+
+
+def test_zero_mask_tcp_ts_is_true_deletion():
+    """zero-masking a TCP timestamp zeroes TSval and leaves a stale checksum (invalid)."""
+    pkt = IP(src="1.2.3.4", dst="5.6.7.8", ttl=64) / \
+        TCP(sport=1234, dport=443, window=8192, options=[("Timestamp", (123456, 789))]) / Raw(b"data")
+    pkt = IP(bytes(pkt))
+    zm = op.zero_mask_bytes(pkt, "tcp.ts")
+    zp = IP(zm)
+    tsval = [o[1][0] for o in zp[TCP].options if o[0] == "Timestamp"]
+    assert tsval == [0]
+    assert not vd.valid(zm)  # stale checksum -> invalid
+    # packet_do keeps it valid
+    assert vd.valid(op.packet_do_bytes(pkt, "tcp.ts", 999999))
+
+
 def test_pooled_sampler_class_agnostic():
     pkts = [tcp_pkt() for _ in range(5)]
     for i, p in enumerate(pkts):

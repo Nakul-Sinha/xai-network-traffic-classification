@@ -1,0 +1,243 @@
+{
+  "p": 0.7,
+  "seed": 0,
+  "n_test": 800,
+  "cnn_test_acc": 0.8462,
+  "cnn": {
+    "base_acc": 0.8462,
+    "N": {
+      "ip.ttl": 0.0025,
+      "ip.id": -0.0025,
+      "ip.src": 0.0037,
+      "ip.dst": 0.0012,
+      "tcp.sport": 0.0062,
+      "tcp.dport": 0.0,
+      "tcp.window": 0.3438,
+      "tcp.seq": -0.0013,
+      "tcp.flags": -0.0013,
+      "payload": 0.0037
+    },
+    "S": {
+      "ip.ttl": 0.4612,
+      "ip.id": 0.5337,
+      "ip.src": 0.5088,
+      "ip.dst": 0.5062,
+      "tcp.sport": 0.4975,
+      "tcp.dport": 0.485,
+      "tcp.window": 0.845,
+      "tcp.seq": 0.53,
+      "tcp.flags": 0.5275,
+      "payload": 0.4838
+    },
+    "R": 1,
+    "R_sets": [
+      [
+        "tcp.window"
+      ]
+    ],
+    "null_N": 0.0062,
+    "audit": {
+      "IntegratedGradients": {
+        "rho": 0.561,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.667,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.dst"
+        ],
+        "named": [
+          "ip.ttl",
+          "ip.dst",
+          "tcp.window"
+        ]
+      },
+      "Saliency": {
+        "rho": 0.11,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.75,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "ip.ttl",
+          "ip.dst",
+          "tcp.window",
+          "tcp.flags"
+        ]
+      },
+      "Occlusion": {
+        "rho": 0.178,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "tcp.window"
+        ]
+      },
+      "DeepSHAP": {
+        "rho": 0.439,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "tcp.window"
+        ]
+      }
+    },
+    "attributions": {
+      "IntegratedGradients": {
+        "ip.ttl": 0.09384235739707947,
+        "ip.id": 0.022895310074090958,
+        "ip.src": 0.041411492973566055,
+        "ip.dst": 0.10061991214752197,
+        "tcp.sport": 0.04596521705389023,
+        "tcp.dport": 0.024301229044795036,
+        "tcp.seq": 0.05318129062652588,
+        "tcp.window": 0.44602927565574646,
+        "tcp.flags": 0.011195752769708633,
+        "payload": 0.02998374029994011
+      },
+      "Saliency": {
+        "ip.ttl": 0.34679341316223145,
+        "ip.id": 0.0842709094285965,
+        "ip.src": 0.08501295000314713,
+        "ip.dst": 0.1689625233411789,
+        "tcp.sport": 0.08138569444417953,
+        "tcp.dport": 0.05166075751185417,
+        "tcp.seq": 0.09507068246603012,
+        "tcp.window": 0.7426127195358276,
+        "tcp.flags": 0.18760515749454498,
+        "payload": 0.06277589499950409
+      },
+      "Occlusion": {
+        "ip.ttl": 0.0024999999999999467,
+        "ip.id": 0.0006249999999999867,
+        "ip.src": 0.0006249999999999867,
+        "ip.dst": 0.0012499999999999734,
+        "tcp.sport": -0.0006250000000000422,
+        "tcp.dport": 0.0,
+        "tcp.seq": 0.00031249999999993783,
+        "tcp.window": 0.14125,
+        "tcp.flags": 0.0,
+        "payload": 0.00021874999999997314
+      },
+      "DeepSHAP": {
+        "ip.ttl": 0.046148925349116326,
+        "ip.id": 0.01937257094272354,
+        "ip.src": 0.018777482435698403,
+        "ip.dst": 0.013943229524174967,
+        "tcp.sport": 0.027198392342870647,
+        "tcp.dport": 0.0,
+        "tcp.seq": 0.02644496459114066,
+        "tcp.window": 0.49435839600861076,
+        "tcp.flags": 0.005572947030159412,
+        "payload": 0.01277056029213253
+      }
+    }
+  },
+  "rf_test_acc": 0.915,
+  "rf": {
+    "base_acc": 0.915,
+    "N": {
+      "ip.ttl": 0.1225,
+      "ip.id": 0.005,
+      "ip.src": 0.0075,
+      "ip.dst": 0.0038,
+      "tcp.sport": -0.0012,
+      "tcp.dport": 0.0,
+      "tcp.window": 0.1275,
+      "tcp.seq": 0.0013,
+      "tcp.flags": -0.0025,
+      "payload": 0.0625
+    },
+    "S": {
+      "ip.ttl": 0.6575,
+      "ip.id": 0.495,
+      "ip.src": 0.5225,
+      "ip.dst": 0.48,
+      "tcp.sport": 0.5225,
+      "tcp.dport": 0.5038,
+      "tcp.window": 0.685,
+      "tcp.seq": 0.4888,
+      "tcp.flags": 0.53,
+      "payload": 0.6112
+    },
+    "R": 1,
+    "R_sets": [
+      [
+        "tcp.window",
+        "ip.ttl"
+      ]
+    ],
+    "null_N": -0.0012,
+    "audit": {
+      "Impurity": {
+        "rho": 0.77,
+        "precision_at_k": 1.0,
+        "false_confidence": 0.0,
+        "blind_spot": 0.333,
+        "top_k": [
+          "ip.ttl",
+          "tcp.window"
+        ],
+        "named": [
+          "ip.ttl",
+          "tcp.window",
+          "payload"
+        ]
+      },
+      "TreeSHAP": {
+        "rho": 0.879,
+        "precision_at_k": 1.0,
+        "false_confidence": 0.0,
+        "blind_spot": 0.333,
+        "top_k": [
+          "ip.ttl",
+          "tcp.window"
+        ],
+        "named": [
+          "ip.ttl",
+          "tcp.window",
+          "payload"
+        ]
+      }
+    },
+    "attributions": {
+      "Impurity": {
+        "ip.ttl": 0.3220267680429847,
+        "ip.id": 0.040895773294989564,
+        "ip.src": 0.03905249525987195,
+        "ip.dst": 0.03836868769790682,
+        "tcp.sport": 0.04114418533299409,
+        "tcp.dport": 0.0,
+        "tcp.window": 0.3106367353387016,
+        "tcp.seq": 0.037406838492956465,
+        "tcp.flags": 0.009680688092785767,
+        "payload": 0.16078782844680906
+      },
+      "TreeSHAP": {
+        "ip.ttl": 0.22290484650212877,
+        "ip.id": 0.007280017035204269,
+        "ip.src": 0.009803454720998715,
+        "ip.dst": 0.0060883314909362185,
+        "tcp.sport": 0.00705177129888037,
+        "tcp.dport": 0.0,
+        "tcp.window": 0.21655154880762784,
+        "tcp.seq": 0.006531186000339892,
+        "tcp.flags": 0.004180068916818012,
+        "payload": 0.1053224731904332
+      }
+    }
+  }
+}

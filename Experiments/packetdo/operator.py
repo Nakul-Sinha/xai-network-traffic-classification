@@ -80,14 +80,33 @@ def zero_mask_bytes(pkt, field_name, ether_offset=0):
             raw[i] = 0
         return bytes(raw)
     if f.name == "tcp.ts":
-        # locate the 4 TSval bytes inside TCP options; if absent, no-op
-        # simplest robust approach: zero via scapy then serialize WITHOUT recompute
-        p = pkt.copy()
-        F._set_tcp_ts(p, 0)
-        # serialize but keep stale checksums: capture bytes of the modified object,
-        # but since scapy recomputes on build, emulate "no recompute" by only replacing
-        # the option value bytes in the original raw. Fallback: return scapy bytes.
-        return bytes(p)
+        # True zero-mask: locate the 4 TSval bytes inside the TCP options region and set
+        # them to 0x00 IN THE RAW, leaving the (now stale) checksum untouched. This is a
+        # real deletion, not a scapy rebuild. If no Timestamp option is present, no-op.
+        if TCP not in pkt:
+            return raw
+        ihl = pkt[IP].ihl * 4
+        tcp_off = ihl  # IP header length (no Ethernet)
+        dataofs = pkt[TCP].dataofs * 4
+        opt_start = tcp_off + 20
+        opt_end = tcp_off + dataofs
+        i = opt_start
+        while i < opt_end and i < len(raw):
+            kind = raw[i]
+            if kind == 0:       # End of options
+                break
+            if kind == 1:       # NOP
+                i += 1; continue
+            if i + 1 >= len(raw):
+                break
+            olen = raw[i + 1]
+            if kind == 8 and olen == 10:   # Timestamp: 4B TSval + 4B TSecr
+                for j in range(i + 2, i + 6):  # zero the 4 TSval bytes only
+                    if j < len(raw):
+                        raw[j] = 0
+                break
+            i += max(olen, 1)
+        return bytes(raw)
     for off in f.offsets:
         idx = off + ether_offset
         if idx < len(raw):

@@ -12,3 +12,8 @@ Experiments/**/data/
 .env
 secrets.md
 
+
+# generated benchmark data (reproducible from seeded generator)
+Experiments/benchmark/data/
+Experiments/**/models/*.pt
+Experiments/**/models/*.pkl

@@ -1,90 +1,90 @@
 {
   "summary": {
-    "n_packets": 1500,
-    "seed": 2,
+    "n_packets": 2000,
+    "seed": 0,
     "baseline_valid_rate": 1.0,
-    "zero_mask_macro_valid_rate": 0.2235,
+    "zero_mask_macro_valid_rate": 0.224,
     "packet_do_macro_valid_rate": 1.0,
     "zero_mask_violations": {
-      "ip_checksum": 6000,
-      "l4_checksum": 10244
+      "ip_checksum": 8000,
+      "l4_checksum": 13691
     },
     "packet_do_violations": {}
   },
   "per_field": {
     "ip.ttl": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "ip.tos": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 1.0,
       "packet_do_valid_rate": 1.0
     },
     "ip.id": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "ip.flags": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 1.0,
       "packet_do_valid_rate": 1.0
     },
     "ip.src": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "ip.dst": {
-      "n": 1500,
+      "n": 2000,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.sport": {
-      "n": 1048,
+      "n": 1413,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.dport": {
-      "n": 1048,
+      "n": 1413,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.seq": {
-      "n": 1048,
+      "n": 1413,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.ack": {
-      "n": 1048,
+      "n": 1413,
       "zero_mask_valid_rate": 1.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.flags": {
-      "n": 1048,
+      "n": 1413,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "tcp.window": {
-      "n": 1048,
-      "zero_mask_valid_rate": 0.3492,
+      "n": 1413,
+      "zero_mask_valid_rate": 0.3539,
       "packet_do_valid_rate": 1.0
     },
     "udp.sport": {
-      "n": 452,
+      "n": 587,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "udp.dport": {
-      "n": 452,
+      "n": 587,
       "zero_mask_valid_rate": 0.0,
       "packet_do_valid_rate": 1.0
     },
     "payload": {
-      "n": 1471,
-      "zero_mask_valid_rate": 0.0034,
+      "n": 1963,
+      "zero_mask_valid_rate": 0.0056,
       "packet_do_valid_rate": 1.0
     }
   }

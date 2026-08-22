@@ -36,10 +36,13 @@ scores are untrustworthy.
 
 ## Per-field structure (the informative part)
 
-Zero-masking's validity rate is **0%** for every field that carries real information
-(ip.ttl, ip.id, ip.src/dst, tcp.sport/dport/seq/flags, udp.sport/dport, payload). It is 100% only
-for fields that were already zero in the population (ip.tos, ip.flags, tcp.ack) - i.e. where
-masking is a no-op that removes nothing.
+Zero-masking's validity rate is **~0%** for every field that carries real information
+(ip.ttl, ip.id, ip.src/dst, tcp.sport/dport/seq/flags, udp.sport/dport are all exactly 0%; payload
+is 0.7%, the residual being the handful of packets whose payload was already all-zero so masking is
+a no-op). It is 100% only for fields that were already zero in this population (ip.tos, ip.flags,
+tcp.ack) - i.e. where masking is a no-op that removes nothing. On real traffic those fields carry
+nonzero values, so their zero-mask validity would also fall; the synthetic macro-rate is therefore
+a *conservative* (high) estimate of zero-masking validity.
 
 One field, **tcp.window, is ~34% valid under zero-masking**, and the reason is a genuine and
 citable arithmetic subtlety, not noise: a window value of 65535 (`0xFFFF`) masked to `0x0000` is
@@ -62,7 +65,18 @@ freedom are not all header fields, only those not fixed by the grammar.
 
 ## Why this motivates the whole paper
 
-E1 establishes, quantitatively, that the standard faithfulness operator is invalid ~78% of the time
-on traffic. Every downstream faithfulness number in the literature that used it was computed partly
-on impossible inputs. The rest of the paper measures how much that matters (E4, E5) using PacketDO,
-which E1 shows is valid by construction.
+E1 establishes, quantitatively, that on this synthetic population the standard faithfulness operator
+produces a protocol-invalid packet for a macro-average of ~78% of intervenable fields (1 - 0.22,
+an unweighted mean over 15 fields; the three 100%-valid fields are 100% only because the generator
+left them zero, so on real traffic the invalid fraction would if anything be higher). Every
+downstream faithfulness number in the literature that used zero-masking was therefore computed
+partly on impossible inputs. The rest of the paper measures how much that matters (E4, E5) using
+PacketDO, which E1 shows is valid by construction.
+
+**Limitation (to state in the paper).** E1 is measured on synthetic packets. A replication on real
+captures (CIC-IDS2017 PCAPs) is planned for Phase 3 and will be reported as the ecological-validity
+check; the synthetic number is an unweighted macro-average, not a per-packet real-traffic rate. Both
+PacketDO's 100% and the validity checker currently rely on scapy's own serializer; the checker was
+independently cross-validated against a from-scratch RFC 1071 checksum implementation (16/16
+adversarial corruption probes correctly rejected), and a tshark/tcpdump cross-check is a further
+hardening step.
