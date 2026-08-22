@@ -1,0 +1,11 @@
+# third-party paper full texts - keep local only
+corpus/notes/tmp-*.txt
+corpus/notes/*.txt
+# python
+__pycache__/
+*.pyc
+.venv/
+# large local artifacts
+*.pcap
+*.pt
+*.pth
