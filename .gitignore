@@ -9,5 +9,6 @@ __pycache__/
 *.pt
 *.pth
 Experiments/**/data/
+.env
 secrets.md
 
