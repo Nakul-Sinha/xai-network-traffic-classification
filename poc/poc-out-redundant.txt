@@ -1,0 +1,30 @@
+WARNING: No libpcap provider available ! pcap won't be used
+=== synthesis: n=1200, artifact strength p=1.0, redundant-model=True ===
+train acc=0.986  test acc=0.983
+
+=== interventional ground truth (packet-layer do(), checksums recomputed) ===
+field         N(F) necessity  S(F) sufficiency
+ip.ttl                 0.133             0.583
+ip.src                 0.010             0.487
+ip.dst                 0.013             0.513
+ip.len                 0.000             0.453
+tcp.sport              0.013             0.483
+tcp.seq                0.003             0.517
+tcp.window             0.340             0.823
+payload                0.013             0.493
+
+=== redundancy R(M): disjoint sufficient sets (greedy) ===
+  S1: ['tcp.window', 'ip.ttl']
+  R(M) = 1
+
+=== explainer audit vs N(F) ===
+  DeepSHAP     rho=+0.68  named=['ip.ttl', 'tcp.window']  false-confidence=0.00  blind-spot=0.00
+               rel-scores: tcp.window=1.00 ip.ttl=0.41 tcp.sport=0.05 payload=0.05
+  IntGrad      rho=+0.66  named=['ip.ttl', 'tcp.window']  false-confidence=0.00  blind-spot=0.00
+               rel-scores: ip.ttl=1.00 tcp.window=0.94 ip.dst=0.15 ip.len=0.13
+  Occlusion    rho=+0.63  named=['ip.ttl', 'tcp.window']  false-confidence=0.00  blind-spot=0.00
+               rel-scores: tcp.window=1.00 ip.ttl=0.57 tcp.seq=0.03 tcp.sport=0.03
+
+Interpretation: if the model leans on ONE of two redundant artifacts, a good rho for
+one explainer does not guarantee the other artifact is visible to any of them; a field
+with N~0 in the top-k is the TRUSTEE false-confidence failure mode, measured.
