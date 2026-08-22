@@ -81,13 +81,38 @@ interventional necessity is ~0):
    missed that it fabricates importance precisely when the true signal is weak, which is the regime
    real traffic classifiers operate in.
 
+## Multi-seed update (ORG-B, seeds 0-4; supersedes single-seed claims above)
+
+A 5-seed pass (each reshuffling split, training, and the resampler stream) revised two seed-0 claims
+and confirmed the rest. Full tables: `Experiments/benchmark/results/robustness.md`.
+
+- **Held:** CNN Saliency FC = 0.684 +/- 0.037 at p=1.0 (0.68-0.74 across all p, sd <= 0.048);
+  CNN Occlusion FC = 0 in every seed/strength; ground truth stable (N(tcp.window) 0.273->0.501 with
+  p, N(ttl) <= 0.004, null control within +/-0.004). The CNN commits to tcp.window in 5/5 seeds.
+- **Revised - "IG is clean at p=1.0" is FALSE:** IntegratedGradients FC at p=1.0 = 0.300 +/- 0.274,
+  nonzero in 3/5 seeds (seed 0 was the favorable draw). IG's graded trend survives (FC falls with p),
+  but the endpoint is "reduced", not "clean".
+- **Revised - "DeepSHAP FC = 0 at all strengths" is FALSE:** DeepSHAP FC at p=0.5 = 0.233 +/- 0.325
+  (fails in 2/5 seeds); clean at p >= 0.7 in all seeds.
+- **TreeSHAP refined:** FC at p=1.0 is bimodal per-seed [0.5,0.5,0,0,0] = 0.200 +/- 0.274. FC=0.5
+  exactly when the RF commits to one of two correlated shortcuts. The correct paper claim is
+  mechanistic: *exact Shapley values split credit by the data's correlation structure, so whenever a
+  model commits to one of several redundant shortcuts (2/5 RF seeds, 5/5 CNN seeds) TreeSHAP
+  fabricates confidence in the unused one* - not a fixed "TreeSHAP FC = 0.5".
+
+**Data-integrity note:** an early background chain fabricated multi-seed files by copying seed-0
+output to *_seedN names (a file-naming race). It was caught (byte-identical files, internal seed=0),
+replaced with genuine reruns, and `aggregate_seeds.py` now enforces a provenance guard. ORG-C
+independently re-audits provenance.
+
 ## Threats / caveats (for the write-up)
 
 - `rho` (Spearman attribution-vs-N) is reported in `audit_summary.md` but is a weak instrument here:
   most fields have `N ~ 0`, so the ranking is dominated by noise among zero-necessity fields.
   False-confidence and precision@k are the load-bearing metrics; `rho` is secondary.
-- Results are single-seed (seed 0). A multi-seed pass (3-5 seeds) with mean +/- sd is queued before
-  the numbers go into the paper.
+- **Occlusion circularity (state in paper):** Occlusion removes a feature by permutation, structurally
+  close to the PacketDO ground-truth operator, so its FC=0 is partly by construction. E5 (zero-mask vs
+  PacketDO deletion) is where this is disentangled.
 - This is the *synthetic* half (known ground truth). The real-data half (E4 on CIC-IDS2017/ISCX
   natural artifacts) is Phase 3 and provides ecological validity.
 - The RF "blind-spot" at low `p` (0.33) reflects that the RF genuinely uses 3 fields while top-k

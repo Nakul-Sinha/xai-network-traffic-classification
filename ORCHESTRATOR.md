@@ -44,9 +44,37 @@ promoted to the paper until a fresh adversarial team reproduces them.
 | ORG-C | verify Phase 2 + real-data | QUEUED | Analysis/*-VERIFICATION.md | - |
 | ORG-D | editorial package | QUEUED | Working/ | - |
 
+## Orchestrator activity log
+
+- Office launched. ORG-A (real data, CPU/net), ORG-B (experiments, GPU), ORG-E (citations, net)
+  running in parallel with no hardware contention by design.
+- Disk incident resolved: 9 GB "loss" was the pip cache (parallel installs); purged, 23 GB free.
+- Paper figures generated (fig1 operator-validity, fig2 false-confidence, fig3 necessity) from
+  verified seed-0 results -> Working/figures/.
+- Stable manuscript sections drafted as prose: Working/sections/01-introduction, 02-related-work,
+  03-method. Results sections (4-10) await verified org outputs.
+- Monitor armed for org-report completion; on completion -> ORG-C (verification) -> integrate.
+
 ## Standing findings (promoted, verified)
 
 - E1: zero-mask 22% vs PacketDO 100% protocol-valid (seed 0, n=2000; verified, RFC 1071 cross-check).
-- E2/E4 synthetic (seed 0): explainers achieve precision@k=1.0 (find the true shortcut) yet Saliency
-  FC 0.67-0.80, IntegratedGradients FC up to 0.75 at weak planting, even exact TreeSHAP FC 0.50 at
-  p=1.0; DeepSHAP/Occlusion FC 0.0. Multi-seed confirmation pending before promotion to the paper.
+- E2/E4 synthetic (seeds 0-4, ORG-B): explainers achieve precision@k=1.0 (find the true shortcut) yet
+  fabricate importance. Saliency FC 0.684+/-0.037 at p=1.0 (robust); Occlusion FC 0 everywhere;
+  TreeSHAP FC bimodal (0.5 when the model commits to one of two redundant shortcuts). CORRECTED vs
+  seed-0: IG NOT clean at p=1.0 (0.300+/-0.274), DeepSHAP NOT clean at p=0.5 (0.233+/-0.325).
+- E5 operator flip (ORG-B, C4 "so what"): under zero-mask, Occlusion (FC=0, faithful) is ranked LAST
+  below Saliency (FC=0.67); under PacketDO all four tie (spread 0.001 < sd). Kendall tau 0.33. The
+  removal operator manufactures the ranking. [pending ORG-C]
+- E4 real data (ORG-A, CIC-IDS2017): destination-port shortcut is the #1 most-necessary feature
+  (N rank 1/52) yet global TreeSHAP ranks it 5/52 and floods the top with packet-length proxies
+  (false confidence); the #1 F1-necessity feature Fwd IAT Min is SHAP rank 36/52 (blind spot).
+  Engelen TCP-appendix artifact: 43.5% of benign flows on original, 0 on corrected. [pending ORG-C]
+- LIME finding (ORG-B): LIME FC=0.667 traced to sklearn StandardScaler scale_=1.0 on zero-variance
+  fields -> LIME perturbs constant fields off-manifold: the protocol-invalidity thesis inside an
+  explainer's own kernel. [pending ORG-C]
+- Data-integrity: a file-naming race fabricated seed copies; caught by provenance guard, replaced with
+  genuine reruns. ORG-C auditing.
+
+## Verification status
+- ORG-C (Phase 3-4 verification) RUNNING: 5 adversarial verifiers reproducing every number +
+  provenance audit. No ORG-A/B number is promoted to the paper until ORG-C signs off.
