@@ -1,115 +1,107 @@
-# phase.md - Plan for the paper
+# phase.md - Plan for the specific paper
 
-**Title (working):** *Do Explanations Explain? An Interventional Ground-Truth Benchmark for
-Explainable AI in Network Traffic Classification*
+**Paper:** *Protocol-Valid Faithfulness Evaluation for ML-Based Network Traffic Classifiers*
+**Gaps covered:** G4 (protocol-valid faithfulness protocol) validated through G1+G3 (planted and
+documented ground truth). Reserve gap for paper 2 or an extension section: G5 (metric
+meta-evaluation via diagnosticity). Everything else from analysis/05 is future work, not scope.
 
-**Author:** Nakul Sinha (solo, no capital, public data, consumer GPU / Colab)
+**Author:** Nakul Sinha (solo). Software: all free (Python, scapy, PyTorch, scikit-learn, shap,
+captum, CICFlowMeter/NFStream). Compute: CPU for tree models and interventions; one cloud GPU
+(user-provided) for the 1D-CNN and the optional ET-BERT flagship table.
 
 **Primary venue:** IEEE Transactions on Network and Service Management (TNSM).
-**Alternates:** Elsevier Computer Networks; Computers & Security; IEEE TIFS if the findings skew
-security-critical. All are journals; TNSM is the best scope match (AI/ML for network management,
-explainability, benchmark papers welcome).
+**Alternates:** Elsevier Computer Networks; Computers and Security.
 
 ---
 
-## 1. Thesis and research questions
+## 1. The claim (one sentence)
 
-Two disconnected literatures: "XAI-for-security" papers attach SHAP/LIME to traffic classifiers and
-never validate the explanations (64% of our 78-paper deep-read corpus uses NO ground truth); the
-"NTC rigour" literature (TRUSTEE CCS'22, S&P'25 SoK, BiasSeeker) diagnoses shortcut learning with
-interventions and never mentions XAI (0 occurrences of explainab*/SHAP/attribution across the S&P'25
-SoK's 348 occlusion experiments). Networking is the one modality where interventional explanation
-ground truth is exact and on-manifold (rewrite field → recompute checksums → valid packet), yet
-ground-truth attribution evaluation exists only in vision (BAM 2019, Debugging Tests 2020) and NLP
-(Bastings EMNLP'22).
+Deletion-style faithfulness evaluation, imported unchanged from vision and NLP, is invalid for
+network traffic because it scores explanations on protocol-impossible inputs; we give a
+grammar-valid interventional protocol, validate it on classifiers with known ground truth, and show
+that standard explainers and the field's current metrics both fail it in measurable ways.
 
-- **RQ1 (validity).** When a traffic classifier is known by intervention to rely on a protocol
-  field, do SHAP / IG / DeepLIFT / LIME / occlusion / attention say so? When they name a field, is
-  the model causally dependent on it?
-- **RQ2 (well-posedness).** How many *disjoint sufficient* field sets does a classifier hold
-  (redundancy degree **R(M)**)? If R(M) > 1 is common, attribution presumes a uniqueness the
-  modality lacks. New in any modality.
-- **RQ3 (metric failure).** Do the proxy metrics in current use (deletion/insertion AOPC, surrogate
-  fidelity, monotonicity, max-sensitivity) predict agreement with interventional ground truth?
-- **RQ4 (plausibility vs faithfulness).** Reproduce ATT&CK-derived plausibility scoring (Alquliti
-  2025) alongside causal faithfulness on the same cells. Prediction: on shortcut-driven models they
-  anti-correlate.
+## 2. Contributions (the 4 things reviewers must be able to point at)
 
-Either outcome of RQ1 is publishable: failure → negative result invalidating a large literature;
-success → the field's first ground-truth validation. R(M) is novel regardless.
+- **C1. PacketDO, a protocol-valid intervention operator.** Field-level do(F := resample from
+  pooled empirical marginal) on packets: rewrite the field with scapy, recompute dependent fields
+  (checksums, lengths, offsets), re-run the model's own preprocessing (byte window or flow-feature
+  extraction). Every counterfactual is a valid packet, unlike zero-masking. Operators per
+  representation: header-field resampling, payload re-randomization, size/timing jitter within
+  protocol bounds.
+- **C2. A validation benchmark with known ground truth.** (a) Planted shortcuts at graded strength
+  p in {0.5, 0.7, 0.9, 1.0} in controlled traffic (TTL, TCP window, IP ID, options order, padding
+  length), with behavioral verification that the model uses them (twin-model test, Bastings-style,
+  never done for traffic); (b) documented natural artifacts as real-data ground truth: CIC-IDS2017
+  TTL 64/128, ISCX Ethernet-header misalignment (TRUSTEE), CICFlowMeter TCP-appendix flows
+  (Engelen corrected-vs-original pair), SII fields (SoK occlusion grid).
+- **C3. The audit.** Six explainers (KernelSHAP, TreeSHAP or DeepSHAP, Integrated Gradients,
+  DeepLIFT, LIME, occlusion) x two model families (RF/XGBoost on flow features; 1D-CNN on raw
+  bytes; optional ET-BERT table) x two datasets (CIC-IDS2017 original+corrected, ISCX VPN-nonVPN).
+  Metrics: Spearman rho against interventional necessity N(F), precision@k, false-confidence rate
+  (explainer names a field with N ~ 0), blind-spot rate (field with high N unnamed).
+- **C4. The operator-sensitivity result.** Recompute standard deletion/AOPC/descriptive-accuracy
+  scores under (i) zero-masking (the field's default) and (ii) PacketDO. Show whether explainer
+  rankings survive the operator change. If they flip (Samek's appendix and ROAD both predict they
+  will), every published NTC explainer comparison that used zero-masking is called into question.
+  This is the paper's "so what".
 
-## 2. Ground-truth instrument
+PoC evidence already in hand (poc/FINDINGS.md): IntGrad ranks a zero-necessity field as its number 1
+feature at p=0.7 (false-confidence 0.67); DeepSHAP 0.50; occlusion clean. The phenomenon is real and
+the full pipeline runs end to end.
 
-Packet-layer `do(F := resample-from-pooled-distribution)`: rewrite protocol field F in every packet
-of a flow (scapy), recompute dependent fields (checksums, lengths, offsets), re-run the model's own
-preprocessing (byte window or CICFlowMeter/NFStream). Measured quantities, inference-only, model
-frozen:
-- **N(F)** necessity = accuracy drop under do(F)
-- **S(F)** sufficiency = accuracy when all fields except F are resampled
-- **R(M)** = number of disjoint minimal sufficient field sets (iterative-pruning extraction - NOT
-  the greedy union-growth of the PoC; that is a known PoC bug)
-- Null-intervention control (resample a known-inert field) for every table.
+## 3. Experiments
 
-## 3. Experimental tracks
+| # | Experiment | Output table/figure |
+|---|---|---|
+| E1 | Operator validity: fraction of protocol-valid counterfactuals under zero-masking vs PacketDO (parse-check + checksum-check) | Table: validity rates; motivates everything |
+| E2 | Planted-shortcut recovery, graded p, both model families | Curves: attribution mass on planted field vs p; per-explainer |
+| E3 | Behavioral verification of planted reliance (twin-model accuracy) | Sanity table backing E2 |
+| E4 | Natural-artifact recovery on CIC-IDS2017 (orig vs corrected) and ISCX | Table: rho, P@k, false-confidence, blind-spot per cell |
+| E5 | Operator sensitivity: explainer rankings under zero-mask vs PacketDO deletion curves | The C4 flip table |
+| E6 | Null-intervention control (resample known-inert field) reported for every table | Control rows in E2/E4 |
+| E7 (optional, GPU) | ET-BERT fine-tune, repeat E4 on one dataset | Flagship deep-model table |
+| E8 (reserve, = G5) | Diagnosticity of deletion-AUC / descriptive accuracy / fidelity on planted-truth models | Extension section or paper 2 |
 
-- **Track A - constructed ground truth.** Inject artifacts (TTL, IP ID, TCP window, TCP options
-  order, TLS cipher order, timing jitter, padding length) at strengths p ∈ {0.5, 0.7, 0.9, 1.0};
-  separate model per p. Include the mandatory **Bastings-style binary recovery baseline** so graded
-  N(F) is shown to add information over the established protocol.
-- **Track B - natural documented artifacts** (ecological validity, cannot be dismissed as toy):
-  ISCX Ethernet-header misalignment (TRUSTEE §7.2); CIC-IDS2017 TTL 64/128 and Heartbleed
-  Bwd-IAT artifacts; CICFlowMeter TCP-appendix flows (Engelen); SII (MAC/IP/port - SoK: ET-BERT
-  0.96→0.51 under D1 occlusion); SeqNo/AckNo/TCP-timestamp flow-ID bytes (Pcap-Encoder:
-  ET-BERT 97.4→19.5).
-- **Track C - the audit.** Explainers {KernelSHAP, TreeSHAP/DeepSHAP, IG, DeepLIFT, LIME,
-  occlusion, attention, TRUSTEE trees} × models {1D-CNN raw bytes, RF/XGBoost flow stats, YaTC or
-  ET-BERT} × datasets {ISCX VPN-nonVPN, CIC-IDS2017(+corrected), USTC-TFC2016}. Metrics: Spearman
-  ρ(attribution, N), precision@k, **false-confidence rate** (named but N≈0), **blind-spot rate**
-  (needed but unnamed).
-- **Track D - proxy-metric meta-evaluation** (G5): does a good AOPC/fidelity score predict good ρ?
-- **Track E - plausibility vs faithfulness** (G12): FAP/FAR vs ρ on the same cells.
-- **Secondary:** drift epochs (agreement decay over time-split data); MAE-pretraining hypothesis
-  from the PoC (masking-trained models have higher R(M) → SOTA transformers are the worst case).
+## 4. Datasets and models
 
-## 4. Paper structure
+- CIC-IDS2017 original + Engelen-corrected (public); ISCX VPN-nonVPN 2016 (public). Both have
+  documented artifacts with citations; both are what the audited literature actually uses.
+- Synthetic controlled traffic for C2a: scapy-generated, seeded, released with the code.
+- Models: RandomForest/XGBoost (CPU), 1D-CNN raw bytes (small GPU), optional ET-BERT (cloud GPU).
+- Everything seeded; one `make all` from clean checkout reproduces every number.
 
-1. Introduction - the two-literatures disconnect; TRUSTEE Table 3 as the opening anecdote
-2. Related work - 7 lineages (analysis/03): TRUSTEE, SoK, BiasSeeker, Traffic-Explainer
-   (cite as the direct intervention precedent, confirmatory direction), Alquliti, Warnecke,
-   Vourganas; plus BAM/Bastings as cross-modal ancestors
-3. Ground-truth methodology (Section 2 above) + threats to validity
-4. Benchmark description + release
-5. Audit results (RQ1, RQ2)
-6. Meta-evaluation (RQ3, RQ4)
-7. Implications - xNIDS, ShortcutCatcher, EXP-SEC consume unvalidated attributions
-8. Limitations & release (code + injected datasets + ground-truth tables; the benchmark is itself
-   a contribution others evaluate new explainers against)
-
-## 5. Schedule (16 weeks)
+## 5. Schedule (14 weeks)
 
 | Weeks | Work |
 |---|---|
-| 1-3 | do() operator + preprocessing harness + dataset hygiene; unit tests per field |
-| 3-6 | Model zoo; Track A injection + verification; N/S/R tables |
-| 6-9 | Track B artifacts; full audit matrix (Track C) |
-| 9-11 | Tracks D & E; drift + MAE secondary experiments |
-| 11-16 | Writing; internal reproduction pass (`make all` from clean checkout); submission |
+| 1-2 | PacketDO operator hardening + unit tests per field; E1 validity study |
+| 3-4 | Synthetic generator + planted-shortcut training (per-p models); E3 verification |
+| 5-6 | Flow-feature pipeline (CICFlowMeter/NFStream); dataset hygiene; natural-artifact reproduction |
+| 7-9 | Full audit matrix E2 + E4 + E6; optional E7 on cloud GPU |
+| 10 | E5 operator-sensitivity study |
+| 11-14 | Writing, internal reproduction pass, submission to TNSM |
 
-## 6. Threats to validity (address in-paper)
+## 6. Threats to validity (answered in-paper)
 
-- Resampling shifts joint distribution → class-agnostic pooled resampling + null-intervention
-  controls reported everywhere.
-- Never retrain under intervention (freeze M); Track A trains per-p *before* interventions.
-- Byte-vs-field granularity → report both; state aggregation rule; handle ISCX header
-  misalignment via protocol-parsed offsets.
-- KernelSHAP cost → stratified sample; the cost itself is a reportable finding (lit: 0.63 s/packet).
-- Retrieval caveats from the deep-read (analysis/05 tail): pull Guidotti 2021, FS-Net full texts
-  via institutional access before citing.
+- Resampling shifts the joint distribution: class-agnostic pooled resampling + null-intervention
+  controls (E6) reported alongside every result.
+- Model never retrained under intervention; per-p models trained before any intervention.
+- Byte-vs-field granularity: report both; aggregation rule stated; ISCX header misalignment handled
+  via protocol-parsed offsets (it is itself ground-truth case B1).
+- KernelSHAP cost: stratified sampling; the measured cost is itself reportable.
+- Redundant fields can depress single-field N(F): report field-set necessity for the documented
+  redundant families (SeqNo/AckNo/TCP-TS); full Rashomon treatment explicitly deferred (G8).
 
-## 7. Evidence base (all in this repo)
+## 7. What is explicitly out of scope (future work section)
 
-`analysis/00-10`: orchestrator notes, thesis, 115 verified claims, closest-prior-work, experimental
-design, distilled 17-gap analysis, gap candidates with kill-tests, novelty corrections (2 overclaims
-caught and documented - read 08 before writing the intro), deep-read final result.
-`poc/`: working demonstration - IG assigns its #1 rank to a field with zero causal necessity at
-p=0.7; DeepSHAP false-confidence 0.50; occlusion clean. `poc/FINDINGS.md` has the numbers.
+Drift-aware evaluation (G11), plausibility axis and analyst studies (G12, G13), adversarial attacks
+on explainers (G14), full redundancy/Rashomon enumeration (G8), attention-as-explanation validation
+across the transformer zoo. Each gets one paragraph in future work, citing analysis/05.
+
+## 8. Evidence base
+
+Broad-program documents remain in this repo: analysis/00-10 (corpus, verified claims, prior-work
+differentiation incl. the two documented novelty corrections in 08, 17-gap distillation in 05),
+poc/ (working demonstration). The broad-program plan this document replaces is preserved at
+paper/phase-broad-program.md.
