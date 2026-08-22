@@ -457,9 +457,9 @@ one and ignores the other, so its redundancy degree R(M)=1 even though the data 
 null-intervention control (tcp.sport, never correlated with the label) stays within ±0.006 of zero
 in every cell, calibrating the estimator's noise floor.
 
-![Fig 3. Interventional necessity N(F).](figures/fig3_necessity.png)
+![Fig 2. Interventional necessity N(F).](figures/fig3_necessity.png)
 
-*Fig 3. Interventional necessity N(F). Models commit to tcp.window and ignore the redundant ip.ttl;
+*Fig 2. Interventional necessity N(F). Models commit to tcp.window and ignore the redundant ip.ttl;
 the null field tcp.sport stays at zero.*
 
 ### 5.3 E4: explainers find the shortcut but fabricate importance
@@ -494,9 +494,9 @@ falsehood, and it is method- and strength-dependent:
 | Impurity | RF | 0.62+/-0.00 | 0.00+/-0.00 | 0.13+/-0.18 | 0.20+/-0.27 |
 | TreeSHAP | RF | 0.00+/-0.00 | 0.00+/-0.00 | 0.33+/-0.00 | 0.20+/-0.27 |
 
-![Fig 2. False-confidence rate vs planting strength.](figures/fig2_false_confidence.png)
+![Fig 3. False-confidence rate vs planting strength.](figures/fig2_false_confidence.png)
 
-*Fig 2. False-confidence rate (fraction of confidently-attributed fields with interventional
+*Fig 3. False-confidence rate (fraction of confidently-attributed fields with interventional
 necessity ~0) vs planting strength, mean ± sd over 5 seeds. Gradient saliency fabricates importance
 robustly (0.68–0.74); Integrated Gradients and DeepSHAP do so conditionally (nonzero in 3/5 and 2/5
 seeds respectively at their worst strength); occlusion is clean (partly by construction, see E5); RF
