@@ -1,0 +1,85 @@
+{
+  "p": 1.0,
+  "seed": 0,
+  "n_test": 800,
+  "cnn_test_acc": 0.9862,
+  "base_acc": 0.9862,
+  "N": {
+    "ip.ttl": 0.0025,
+    "ip.id": 0.0025,
+    "ip.src": -0.0025,
+    "ip.dst": -0.0063,
+    "tcp.sport": -0.0013,
+    "tcp.dport": 0.0,
+    "tcp.window": 0.4838,
+    "tcp.seq": -0.0025,
+    "tcp.flags": -0.0038,
+    "payload": -0.005
+  },
+  "null_N": -0.0013,
+  "n_explain": 150,
+  "explainers": {
+    "KernelSHAP": {
+      "fields": {
+        "ip.ttl": 0.008775834293660183,
+        "ip.id": 0.000398833506434349,
+        "ip.src": 0.0016344299673866788,
+        "ip.dst": 0.001655515253141217,
+        "tcp.sport": 0.0012581295265677835,
+        "tcp.dport": 0.0,
+        "tcp.seq": 0.004434440879529155,
+        "tcp.window": 0.19458887143060472,
+        "tcp.flags": 0.00022883240700383677,
+        "payload": 0.0018848761622619371
+      },
+      "audit": {
+        "rho": 0.183,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "tcp.window"
+        ]
+      },
+      "runtime_s": 16.18,
+      "n_explained": 150,
+      "s_per_100_samples": 10.78
+    },
+    "LIME": {
+      "fields": {
+        "ip.ttl": 0.009608235855956198,
+        "ip.id": 0.007227659790255822,
+        "ip.src": 0.009649344826219946,
+        "ip.dst": 0.0323900938644452,
+        "tcp.sport": 0.007952848243656264,
+        "tcp.dport": 0.018434269626390287,
+        "tcp.seq": 0.007261713508014071,
+        "tcp.window": 0.09105008059576841,
+        "tcp.flags": 0.006166011625897792,
+        "payload": 0.007082326315530521
+      },
+      "audit": {
+        "rho": 0.311,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.667,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.dst"
+        ],
+        "named": [
+          "ip.dst",
+          "tcp.dport",
+          "tcp.window"
+        ]
+      },
+      "runtime_s": 1.56,
+      "n_explained": 150,
+      "s_per_100_samples": 1.04
+    }
+  }
+}

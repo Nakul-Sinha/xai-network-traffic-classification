@@ -1,0 +1,363 @@
+{
+  "p": 1.0,
+  "seed": 0,
+  "n_test": 800,
+  "K": 10,
+  "base_acc": 0.9862,
+  "N": {
+    "ip.ttl": 0.0025,
+    "ip.id": 0.0025,
+    "ip.src": -0.0025,
+    "ip.dst": -0.0063,
+    "tcp.sport": -0.0013,
+    "tcp.dport": 0.0,
+    "tcp.window": 0.4838,
+    "tcp.seq": -0.0025,
+    "tcp.flags": -0.0038,
+    "payload": -0.005
+  },
+  "pdo_seeds": [
+    100,
+    101,
+    102,
+    103,
+    104
+  ],
+  "explainers": {
+    "IntegratedGradients": {
+      "field_ranking": [
+        "tcp.window",
+        "ip.ttl",
+        "ip.dst",
+        "tcp.seq",
+        "tcp.sport",
+        "payload",
+        "ip.src",
+        "tcp.dport",
+        "ip.id",
+        "tcp.flags"
+      ],
+      "field_scores": {
+        "ip.ttl": 0.12714,
+        "ip.id": 0.02495,
+        "ip.src": 0.04714,
+        "ip.dst": 0.12141,
+        "tcp.sport": 0.05501,
+        "tcp.dport": 0.03376,
+        "tcp.seq": 0.08077,
+        "tcp.window": 0.70352,
+        "tcp.flags": 0.01603,
+        "payload": 0.05226
+      },
+      "zero_mask": {
+        "curve": [
+          0.5375,
+          0.53,
+          0.5275,
+          0.5288,
+          0.5325,
+          0.4888,
+          0.495,
+          0.48,
+          0.4838,
+          0.4825
+        ],
+        "aopc": 0.4776249999999999,
+        "deletion_auc": 0.5086249999999999
+      },
+      "packetdo": {
+        "curve_mean": [
+          0.5052,
+          0.4965,
+          0.5025,
+          0.501,
+          0.4928,
+          0.4975,
+          0.4935,
+          0.4965,
+          0.5008,
+          0.4942
+        ],
+        "curve_std": [
+          0.0289,
+          0.0158,
+          0.0157,
+          0.011,
+          0.0104,
+          0.0097,
+          0.0152,
+          0.0115,
+          0.0175,
+          0.0205
+        ],
+        "per_seed_aopc": [
+          0.488375,
+          0.4897499999999999,
+          0.487875,
+          0.49574999999999997,
+          0.47924999999999984
+        ],
+        "aopc": 0.48819999999999997,
+        "deletion_auc": 0.49805
+      }
+    },
+    "Saliency": {
+      "field_ranking": [
+        "tcp.window",
+        "ip.ttl",
+        "tcp.flags",
+        "ip.dst",
+        "tcp.seq",
+        "payload",
+        "tcp.sport",
+        "ip.src",
+        "ip.id",
+        "tcp.dport"
+      ],
+      "field_scores": {
+        "ip.ttl": 0.42073,
+        "ip.id": 0.08782,
+        "ip.src": 0.08787,
+        "ip.dst": 0.18505,
+        "tcp.sport": 0.08898,
+        "tcp.dport": 0.06778,
+        "tcp.seq": 0.13455,
+        "tcp.window": 1.06214,
+        "tcp.flags": 0.27605,
+        "payload": 0.09476
+      },
+      "zero_mask": {
+        "curve": [
+          0.5375,
+          0.53,
+          0.53,
+          0.5275,
+          0.5288,
+          0.5112,
+          0.4888,
+          0.495,
+          0.5012,
+          0.4825
+        ],
+        "aopc": 0.473,
+        "deletion_auc": 0.51325
+      },
+      "packetdo": {
+        "curve_mean": [
+          0.5052,
+          0.4965,
+          0.5015,
+          0.5025,
+          0.4945,
+          0.4968,
+          0.4982,
+          0.4995,
+          0.5,
+          0.493
+        ],
+        "curve_std": [
+          0.0289,
+          0.0158,
+          0.014,
+          0.0088,
+          0.0123,
+          0.009,
+          0.0161,
+          0.0131,
+          0.0192,
+          0.0194
+        ],
+        "per_seed_aopc": [
+          0.48999999999999994,
+          0.4883749999999999,
+          0.4867499999999999,
+          0.49399999999999994,
+          0.4782499999999999
+        ],
+        "aopc": 0.487475,
+        "deletion_auc": 0.498775
+      }
+    },
+    "DeepSHAP": {
+      "field_ranking": [
+        "tcp.window",
+        "ip.ttl",
+        "tcp.seq",
+        "tcp.sport",
+        "payload",
+        "ip.src",
+        "ip.id",
+        "ip.dst",
+        "tcp.flags",
+        "tcp.dport"
+      ],
+      "field_scores": {
+        "ip.ttl": 0.05217,
+        "ip.id": 0.01611,
+        "ip.src": 0.02096,
+        "ip.dst": 0.01545,
+        "tcp.sport": 0.02736,
+        "tcp.dport": 0.0,
+        "tcp.seq": 0.03656,
+        "tcp.window": 0.66042,
+        "tcp.flags": 0.00771,
+        "payload": 0.02326
+      },
+      "zero_mask": {
+        "curve": [
+          0.5375,
+          0.53,
+          0.5312,
+          0.5288,
+          0.515,
+          0.505,
+          0.505,
+          0.5025,
+          0.5012,
+          0.4825
+        ],
+        "aopc": 0.472375,
+        "deletion_auc": 0.5138749999999999
+      },
+      "packetdo": {
+        "curve_mean": [
+          0.5052,
+          0.4965,
+          0.5022,
+          0.504,
+          0.4945,
+          0.498,
+          0.4957,
+          0.5012,
+          0.5022,
+          0.4907
+        ],
+        "curve_std": [
+          0.0289,
+          0.0158,
+          0.0166,
+          0.0119,
+          0.0105,
+          0.0113,
+          0.012,
+          0.0126,
+          0.0194,
+          0.0216
+        ],
+        "per_seed_aopc": [
+          0.48724999999999996,
+          0.48975,
+          0.48737499999999995,
+          0.4955,
+          0.47612499999999996
+        ],
+        "aopc": 0.48719999999999997,
+        "deletion_auc": 0.49905
+      }
+    },
+    "Occlusion": {
+      "field_ranking": [
+        "tcp.window",
+        "ip.ttl",
+        "ip.id",
+        "tcp.dport",
+        "tcp.flags",
+        "ip.dst",
+        "tcp.seq",
+        "ip.src",
+        "tcp.sport",
+        "payload"
+      ],
+      "field_scores": {
+        "ip.ttl": 0.0025,
+        "ip.id": 0.00187,
+        "ip.src": -0.00063,
+        "ip.dst": -0.0,
+        "tcp.sport": -0.00063,
+        "tcp.dport": 0.0,
+        "tcp.seq": -0.00031,
+        "tcp.window": 0.21875,
+        "tcp.flags": 0.0,
+        "payload": -0.00088
+      },
+      "zero_mask": {
+        "curve": [
+          0.5375,
+          0.53,
+          0.53,
+          0.53,
+          0.53,
+          0.53,
+          0.5288,
+          0.525,
+          0.51,
+          0.4825
+        ],
+        "aopc": 0.46287500000000004,
+        "deletion_auc": 0.5233749999999999
+      },
+      "packetdo": {
+        "curve_mean": [
+          0.5052,
+          0.4965,
+          0.4992,
+          0.5012,
+          0.4922,
+          0.494,
+          0.4982,
+          0.5002,
+          0.501,
+          0.4938
+        ],
+        "curve_std": [
+          0.0289,
+          0.0158,
+          0.0147,
+          0.0126,
+          0.0114,
+          0.0079,
+          0.0128,
+          0.0135,
+          0.0211,
+          0.0199
+        ],
+        "per_seed_aopc": [
+          0.488625,
+          0.492125,
+          0.48749999999999993,
+          0.49574999999999997,
+          0.4763749999999999
+        ],
+        "aopc": 0.4880749999999999,
+        "deletion_auc": 0.4981750000000001
+      }
+    }
+  },
+  "ranking_zero_mask": [
+    "IntegratedGradients",
+    "Saliency",
+    "DeepSHAP",
+    "Occlusion"
+  ],
+  "ranking_packetdo": [
+    "IntegratedGradients",
+    "Occlusion",
+    "Saliency",
+    "DeepSHAP"
+  ],
+  "spearman_rho": 0.4,
+  "spearman_p": 0.6,
+  "kendall_tau": 0.3333,
+  "kendall_p": 0.75,
+  "flipped_pairs": [
+    [
+      "Saliency",
+      "Occlusion"
+    ],
+    [
+      "DeepSHAP",
+      "Occlusion"
+    ]
+  ],
+  "ranking_flips": true
+}

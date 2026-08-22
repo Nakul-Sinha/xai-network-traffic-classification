@@ -1,0 +1,239 @@
+{
+  "p": 1.0,
+  "seed": 2,
+  "n_test": 800,
+  "cnn_test_acc": 0.9938,
+  "cnn": {
+    "base_acc": 0.9938,
+    "N": {
+      "ip.ttl": 0.0,
+      "ip.id": -0.0038,
+      "ip.src": -0.0038,
+      "ip.dst": 0.0025,
+      "tcp.sport": -0.0012,
+      "tcp.dport": 0.0,
+      "tcp.window": 0.485,
+      "tcp.seq": -0.0025,
+      "tcp.flags": -0.0025,
+      "payload": 0.0025
+    },
+    "S": {
+      "ip.ttl": 0.5062,
+      "ip.id": 0.4825,
+      "ip.src": 0.51,
+      "ip.dst": 0.5275,
+      "tcp.sport": 0.5175,
+      "tcp.dport": 0.49,
+      "tcp.window": 0.9988,
+      "tcp.seq": 0.47,
+      "tcp.flags": 0.5012,
+      "payload": 0.5012
+    },
+    "R": 1,
+    "R_sets": [
+      [
+        "tcp.window"
+      ]
+    ],
+    "null_N": -0.0012,
+    "audit": {
+      "IntegratedGradients": {
+        "rho": 0.264,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.5,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.dst"
+        ],
+        "named": [
+          "ip.dst",
+          "tcp.window"
+        ]
+      },
+      "Saliency": {
+        "rho": 0.123,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.75,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "ip.ttl",
+          "ip.id",
+          "ip.dst",
+          "tcp.window"
+        ]
+      },
+      "Occlusion": {
+        "rho": 0.549,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.ttl"
+        ],
+        "named": [
+          "tcp.window"
+        ]
+      },
+      "DeepSHAP": {
+        "rho": -0.061,
+        "precision_at_k": 0.5,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "tcp.window",
+          "ip.id"
+        ],
+        "named": [
+          "tcp.window"
+        ]
+      }
+    },
+    "attributions": {
+      "IntegratedGradients": {
+        "ip.ttl": 0.08360828459262848,
+        "ip.id": 0.11224803328514099,
+        "ip.src": 0.0582817979156971,
+        "ip.dst": 0.14822600781917572,
+        "tcp.sport": 0.05187232792377472,
+        "tcp.dport": 0.05530411750078201,
+        "tcp.seq": 0.07513350248336792,
+        "tcp.window": 0.6325356960296631,
+        "tcp.flags": 0.01005161926150322,
+        "payload": 0.047098223119974136
+      },
+      "Saliency": {
+        "ip.ttl": 0.25057312846183777,
+        "ip.id": 0.23245453834533691,
+        "ip.src": 0.12817391753196716,
+        "ip.dst": 0.2314853072166443,
+        "tcp.sport": 0.09262026846408844,
+        "tcp.dport": 0.12424437701702118,
+        "tcp.seq": 0.13026151061058044,
+        "tcp.window": 0.9095138311386108,
+        "tcp.flags": 0.16942691802978516,
+        "payload": 0.08401531726121902
+      },
+      "Occlusion": {
+        "ip.ttl": 0.0012499999999999734,
+        "ip.id": -0.0006249999999999867,
+        "ip.src": -0.0006249999999999867,
+        "ip.dst": -0.0006249999999999867,
+        "tcp.sport": -0.0006249999999999867,
+        "tcp.dport": 0.0,
+        "tcp.seq": -0.00093749999999998,
+        "tcp.window": 0.22249999999999998,
+        "tcp.flags": 0.0,
+        "payload": -0.00024999999999999746
+      },
+      "DeepSHAP": {
+        "ip.ttl": 0.030638675633817912,
+        "ip.id": 0.056639070622150026,
+        "ip.src": 0.02050125611600606,
+        "ip.dst": 0.01756898458363139,
+        "tcp.sport": 0.02245436078806961,
+        "tcp.dport": 0.0,
+        "tcp.seq": 0.03457704937398376,
+        "tcp.window": 0.5338790932297707,
+        "tcp.flags": 0.0026459167173015887,
+        "payload": 0.01984481639324895
+      }
+    }
+  },
+  "rf_test_acc": 1.0,
+  "rf": {
+    "base_acc": 1.0,
+    "N": {
+      "ip.ttl": 0.3862,
+      "ip.id": 0.0,
+      "ip.src": 0.0,
+      "ip.dst": 0.0,
+      "tcp.sport": 0.0,
+      "tcp.dport": 0.0,
+      "tcp.window": 0.1175,
+      "tcp.seq": 0.0,
+      "tcp.flags": 0.0,
+      "payload": 0.0
+    },
+    "S": {
+      "ip.ttl": 0.8788,
+      "ip.id": 0.4863,
+      "ip.src": 0.5225,
+      "ip.dst": 0.5,
+      "tcp.sport": 0.4913,
+      "tcp.dport": 0.4925,
+      "tcp.window": 0.5875,
+      "tcp.seq": 0.5375,
+      "tcp.flags": 0.4863,
+      "payload": 0.4775
+    },
+    "R": 1,
+    "R_sets": [
+      [
+        "ip.ttl"
+      ]
+    ],
+    "null_N": 0.0,
+    "audit": {
+      "Impurity": {
+        "rho": 0.701,
+        "precision_at_k": 1.0,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "ip.ttl",
+          "tcp.window"
+        ],
+        "named": [
+          "ip.ttl",
+          "tcp.window"
+        ]
+      },
+      "TreeSHAP": {
+        "rho": 0.701,
+        "precision_at_k": 1.0,
+        "false_confidence": 0.0,
+        "blind_spot": 0.0,
+        "top_k": [
+          "ip.ttl",
+          "tcp.window"
+        ],
+        "named": [
+          "ip.ttl",
+          "tcp.window"
+        ]
+      }
+    },
+    "attributions": {
+      "Impurity": {
+        "ip.ttl": 0.48948708677070357,
+        "ip.id": 0.0007821102851321977,
+        "ip.src": 0.0007981556029542473,
+        "ip.dst": 0.0005922151958147934,
+        "tcp.sport": 0.0006194084331782856,
+        "tcp.dport": 0.0,
+        "tcp.window": 0.45460475950005924,
+        "tcp.seq": 0.0006495393429190205,
+        "tcp.flags": 6.849106526179093e-05,
+        "payload": 0.05239823380397704
+      },
+      "TreeSHAP": {
+        "ip.ttl": 0.254072076795541,
+        "ip.id": 0.0010519656267968366,
+        "ip.src": 0.0007689360142372554,
+        "ip.dst": 0.0005344111819765188,
+        "tcp.sport": 0.00025114574416617517,
+        "tcp.dport": 0.0,
+        "tcp.window": 0.23442548314274766,
+        "tcp.seq": 0.00045530740610122346,
+        "tcp.flags": 6.00847642042011e-05,
+        "payload": 0.026613539153622075
+      }
+    }
+  }
+}
