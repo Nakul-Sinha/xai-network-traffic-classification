@@ -1,0 +1,69 @@
+[a2rob +    0.0s] loading CIC-IDS2017 flows once for all runs...
+[a2rob +   26.9s] loaded 2,520,751 x 52
+[a2rob +   26.9s] === RUN default_seed0 (seed 0, rf {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20}) ===
+[a2rob +   33.2s]   train RF {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20} seed=0 on 490,000 rows...
+[a2rob +   80.9s]   baseline acc 0.997890 macro-F1 0.914942
+[a2rob +  103.5s]   N(dst_port) acc drop 0.004343 +/- 0.000124; BruteForce recall drop 0.3780
+[a2rob +  136.8s]     ...N(f) 13/52
+[a2rob +  168.5s]     ...N(f) 26/52
+[a2rob +  196.4s]     ...N(f) 39/52
+[a2rob +  223.8s]     ...N(f) 52/52
+[a2rob +  226.7s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob +  247.8s]   SHAP done in 21s; global rank of dst_port: 5
+[a2rob +  247.8s] === default_seed0 done in 221s; N_rank_acc=1 shap_rank=5 FC_acc_only=9/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob +  247.8s] === RUN default_seed1 (seed 1, rf {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20}) ===
+[a2rob +  252.1s]   train RF {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20} seed=1 on 490,000 rows...
+[a2rob +  296.1s]   baseline acc 0.997724 macro-F1 0.909840
+[a2rob +  315.0s]   N(dst_port) acc drop 0.003478 +/- 0.000059; BruteForce recall drop 0.4409
+[a2rob +  342.2s]     ...N(f) 13/52
+[a2rob +  368.8s]     ...N(f) 26/52
+[a2rob +  395.3s]     ...N(f) 39/52
+[a2rob +  421.4s]     ...N(f) 52/52
+[a2rob +  421.6s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob +  443.5s]   SHAP done in 22s; global rank of dst_port: 7
+[a2rob +  443.5s] === default_seed1 done in 196s; N_rank_acc=1 shap_rank=7 FC_acc_only=8/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob +  443.5s] === RUN default_seed2 (seed 2, rf {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20}) ===
+[a2rob +  447.6s]   train RF {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20} seed=2 on 490,000 rows...
+[a2rob +  488.9s]   baseline acc 0.997695 macro-F1 0.913088
+[a2rob +  507.9s]   N(dst_port) acc drop 0.002971 +/- 0.000102; BruteForce recall drop 0.3819
+[a2rob +  534.9s]     ...N(f) 13/52
+[a2rob +  561.5s]     ...N(f) 26/52
+[a2rob +  588.5s]     ...N(f) 39/52
+[a2rob +  615.2s]     ...N(f) 52/52
+[a2rob +  615.4s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob +  636.4s]   SHAP done in 21s; global rank of dst_port: 8
+[a2rob +  636.4s] === default_seed2 done in 193s; N_rank_acc=1 shap_rank=8 FC_acc_only=9/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob +  636.4s] === RUN default_seed3 (seed 3, rf {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20}) ===
+[a2rob +  640.3s]   train RF {'n_estimators': 100, 'max_depth': 20, 'min_samples_leaf': 20} seed=3 on 490,000 rows...
+[a2rob +  680.8s]   baseline acc 0.997705 macro-F1 0.920769
+[a2rob +  699.5s]   N(dst_port) acc drop 0.002479 +/- 0.000053; BruteForce recall drop 0.1995
+[a2rob +  726.4s]     ...N(f) 13/52
+[a2rob +  752.8s]     ...N(f) 26/52
+[a2rob +  779.3s]     ...N(f) 39/52
+[a2rob +  805.5s]     ...N(f) 52/52
+[a2rob +  805.6s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob +  826.3s]   SHAP done in 21s; global rank of dst_port: 9
+[a2rob +  826.3s] === default_seed3 done in 190s; N_rank_acc=1 shap_rank=9 FC_acc_only=9/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob +  826.3s] === RUN alt_d30l5_seed0 (seed 0, rf {'n_estimators': 100, 'max_depth': 30, 'min_samples_leaf': 5}) ===
+[a2rob +  830.4s]   train RF {'n_estimators': 100, 'max_depth': 30, 'min_samples_leaf': 5} seed=0 on 490,000 rows...
+[a2rob +  873.2s]   baseline acc 0.998519 macro-F1 0.948833
+[a2rob +  892.1s]   N(dst_port) acc drop 0.006344 +/- 0.000091; BruteForce recall drop 0.3596
+[a2rob +  919.8s]     ...N(f) 13/52
+[a2rob +  946.5s]     ...N(f) 26/52
+[a2rob +  973.1s]     ...N(f) 39/52
+[a2rob +  999.7s]     ...N(f) 52/52
+[a2rob + 1000.0s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob + 1044.0s]   SHAP done in 44s; global rank of dst_port: 5
+[a2rob + 1044.0s] === alt_d30l5_seed0 done in 218s; N_rank_acc=1 shap_rank=5 FC_acc_only=9/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob + 1044.0s] === RUN alt_d30l5_seed1 (seed 1, rf {'n_estimators': 100, 'max_depth': 30, 'min_samples_leaf': 5}) ===
+[a2rob + 1048.0s]   train RF {'n_estimators': 100, 'max_depth': 30, 'min_samples_leaf': 5} seed=1 on 490,000 rows...
+[a2rob + 1092.7s]   baseline acc 0.998405 macro-F1 0.938200
+[a2rob + 1111.2s]   N(dst_port) acc drop 0.004702 +/- 0.000078; BruteForce recall drop 0.3556
+[a2rob + 1138.2s]     ...N(f) 13/52
+[a2rob + 1164.7s]     ...N(f) 26/52
+[a2rob + 1190.3s]     ...N(f) 39/52
+[a2rob + 1215.8s]     ...N(f) 52/52
+[a2rob + 1216.0s]   TreeSHAP (tree_path_dependent) on 1,000 rows...
+[a2rob + 1259.0s]   SHAP done in 43s; global rank of dst_port: 6
+[a2rob + 1259.0s] === alt_d30l5_seed1 done in 215s; N_rank_acc=1 shap_rank=6 FC_acc_only=9/10; wrote C:\Users\nakul\OneDrive\Desktop\Academics\xai-ntc-research\Experiments\realdata\results\a2_robustness_runs.json ===
+[a2rob + 1259.0s] ALL DONE

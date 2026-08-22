@@ -234,6 +234,9 @@ prec_at_5_f1 = len(set(shap_order[:5]) & set(Nf1_rank_order[:5])) / 5
 FC_EPS_F1 = 0.005
 false_conf = [f for f in shap_order[:TOP_K]
               if N_mean[f] < FC_EPS and N_f1[f] < FC_EPS_F1]
+# acc-only criterion (the synthetic-benchmark N(F) convention; ORG-C fix #4):
+# machine-readable list + count so the promoted "9/10" number is traceable.
+false_conf_acc_only = [f for f in shap_order[:TOP_K] if N_mean[f] < FC_EPS]
 blind = [f for f in N_rank_order[:TOP_K] if f not in topk_shap]
 blind_f1 = [f for f in Nf1_rank_order[:TOP_K] if f not in topk_shap]
 log(f"Spearman rho(SHAP, N_acc) = {rho:.4f} (p={rho_p:.2e}); "
@@ -243,6 +246,8 @@ log(f"precision@5 {prec_at_5:.2f} / @10 {prec_at_k:.2f} (N_acc); "
     f"@5 {prec_at_5_f1:.2f} / @10 {prec_at_k_f1:.2f} (N_f1)")
 log(f"false-confidence features (SHAP top-{TOP_K}, N_acc<{FC_EPS} "
     f"and N_f1<{FC_EPS_F1}): {false_conf}")
+log(f"false-confidence ACC-ONLY (SHAP top-{TOP_K}, N_acc<{FC_EPS}): "
+    f"{len(false_conf_acc_only)}/{TOP_K} {false_conf_acc_only}")
 log(f"blind spots (N_acc top-{TOP_K} not in SHAP top-{TOP_K}): {blind}")
 log(f"blind spots (N_f1  top-{TOP_K} not in SHAP top-{TOP_K}): {blind_f1}")
 
@@ -326,6 +331,11 @@ out = {
         "precision_at_5_Nacc": prec_at_5, "precision_at_10_Nacc": prec_at_k,
         "precision_at_5_Nf1": prec_at_5_f1, "precision_at_10_Nf1": prec_at_k_f1,
         "false_confidence_features": false_conf,
+        "false_confidence_acc_only": {
+            "criterion": f"N_acc < {FC_EPS}",
+            "features": false_conf_acc_only,
+            "count": len(false_conf_acc_only),
+        },
         "blind_spot_features_Nacc": blind,
         "blind_spot_features_Nf1": blind_f1,
         "N_rank_dst_port_acc": N_rank[DST],

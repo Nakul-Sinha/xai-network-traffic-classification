@@ -1,0 +1,1232 @@
+{
+  "default_seed0": {
+    "seed": 0,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "min_samples_leaf": 20
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9978904761904762,
+      "test_macro_f1": 0.9149417354736281,
+      "eval_subset_accuracy": 0.99808,
+      "eval_subset_macro_f1": 0.9265596909329449,
+      "per_class_recall": {
+        "Bots": 0.345679012345679,
+        "Brute Force": 0.9803149606299213,
+        "DDoS": 0.9982184716361931,
+        "DoS": 0.9902732172727836,
+        "Normal Traffic": 0.9994728881147729,
+        "Port Scanning": 0.9964266807834833,
+        "Web Attacks": 0.848314606741573
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.004343333333333366,
+      "acc_drop_std": 0.00012370783369662836,
+      "f1_drop_mean": 0.04791780221286668,
+      "f1_drop_std": 0.0013376268631112892
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.04938271604938271,
+      "Brute Force": 0.3779527559055118,
+      "DDoS": 0.002625410220346902,
+      "DoS": 0.030915061024719637,
+      "Normal Traffic": 0.0003093917587202455,
+      "Port Scanning": 0.00013234515616722398,
+      "Web Attacks": 0.0
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.0042119999999999935,
+      "f1_drop_mean": 0.048407151876935006
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.0042119999999999935
+      ],
+      [
+        "Fwd IAT Min",
+        0.0031199999999999006
+      ],
+      [
+        "Fwd Header Length",
+        0.0007960000000000189
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.0006359999999999699
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.00047600000000003195
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00044399999999999995
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.00035599999999991194
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.000348000000000126
+      ],
+      [
+        "Average Packet Size",
+        0.00031599999999987194
+      ],
+      [
+        "Bwd Packet Length Max",
+        0.00024799999999991496
+      ]
+    ],
+    "shap_rank_dst_port": 5,
+    "shap_dst_port_mean_abs": 0.005892016479304509,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.008927317216621202
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.007989744470900622
+      ],
+      [
+        "Packet Length Variance",
+        0.007231794832207663
+      ],
+      [
+        "Packet Length Std",
+        0.0064855564905634345
+      ],
+      [
+        "Destination Port",
+        0.005892016479304509
+      ],
+      [
+        "Packet Length Mean",
+        0.005473979978208307
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.005340919459132441
+      ],
+      [
+        "Bwd Packet Length Max",
+        0.005278220686691251
+      ],
+      [
+        "Average Packet Size",
+        0.005136616656607783
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.004780087274670422
+      ]
+    ],
+    "gini_rank_dst_port": 13,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.6875614124983409,
+      "spearman_p": 1.797627743783111e-08,
+      "spearman_rho_shap_vs_N_f1": 0.5171177324340477,
+      "precision_at_5_Nacc": 0.4,
+      "precision_at_10_Nacc": 0.6,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Bwd Packet Length Std",
+          "Bwd Packet Length Mean",
+          "Packet Length Variance",
+          "Packet Length Std",
+          "Packet Length Mean",
+          "Fwd Packet Length Max",
+          "Bwd Packet Length Max",
+          "Average Packet Size",
+          "Total Length of Fwd Packets"
+        ],
+        "count": 9
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [],
+        "count": 0
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.0006359999999999699,
+      "Bwd Packet Length Mean": 0.00035599999999991194,
+      "Packet Length Variance": 0.00022400000000000198,
+      "Packet Length Std": 0.00023999999999990695,
+      "Destination Port": 0.0042119999999999935,
+      "Packet Length Mean": 0.000208000000000097,
+      "Fwd Packet Length Max": 0.00018799999999996597,
+      "Bwd Packet Length Max": 0.00024799999999991496,
+      "Average Packet Size": 0.00031599999999987194,
+      "Total Length of Fwd Packets": 0.000348000000000126
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.0065982484431251764,
+      "Bwd Packet Length Mean": 0.00880940166531008,
+      "Packet Length Variance": 0.012786618840965436,
+      "Packet Length Std": 0.013829745569882923,
+      "Destination Port": 0.048407151876935006,
+      "Packet Length Mean": 0.012943311981585714,
+      "Fwd Packet Length Max": 0.010914580816444253,
+      "Bwd Packet Length Max": 0.005418174297737832,
+      "Average Packet Size": 0.019563825743991514,
+      "Total Length of Fwd Packets": 0.012307244114349802
+    },
+    "runtime_seconds": 220.86567187309265,
+    "shap_seconds": 21.128226041793823
+  },
+  "default_seed1": {
+    "seed": 1,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "min_samples_leaf": 20
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9977238095238096,
+      "test_macro_f1": 0.9098395635977841,
+      "eval_subset_accuracy": 0.99754,
+      "eval_subset_macro_f1": 0.9099929175157048,
+      "per_class_recall": {
+        "Bots": 0.32098765432098764,
+        "Brute Force": 0.9750656167979003,
+        "DDoS": 0.9977496483825598,
+        "DoS": 0.9897775850319063,
+        "Normal Traffic": 0.9993754870055461,
+        "Port Scanning": 0.9965585704831238,
+        "Web Attacks": 0.8603351955307262
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.003478095238095169,
+      "acc_drop_std": 5.8986143113133846e-05,
+      "f1_drop_mean": 0.057392041603159916,
+      "f1_drop_std": 0.0015467860281770211
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.07407407407407407,
+      "Brute Force": 0.4409448818897638,
+      "DDoS": 9.376465072663542e-05,
+      "DoS": 0.01883402515333621,
+      "Normal Traffic": 0.0003838749598936708,
+      "Port Scanning": 0.0,
+      "Web Attacks": 0.005586592178770888
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.0034359999999998836,
+      "f1_drop_mean": 0.05325636991850258
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.0034359999999998836
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.0026839999999999087
+      ],
+      [
+        "Fwd IAT Min",
+        0.0023320000000001118
+      ],
+      [
+        "Fwd Header Length",
+        0.0006799999999999029
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00023200000000000998
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.00022400000000000198
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.000136000000000136
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.00013599999999991397
+      ],
+      [
+        "Fwd Packet Length Mean",
+        0.00011200000000000099
+      ],
+      [
+        "Average Packet Size",
+        0.00011200000000000099
+      ]
+    ],
+    "shap_rank_dst_port": 7,
+    "shap_dst_port_mean_abs": 0.005468785184663567,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.01038146717351775
+      ],
+      [
+        "Packet Length Variance",
+        0.007734368783475534
+      ],
+      [
+        "Packet Length Std",
+        0.0068783759969835295
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.006056696274586744
+      ],
+      [
+        "Average Packet Size",
+        0.00581511553138082
+      ],
+      [
+        "Bwd Packet Length Max",
+        0.005774801960536062
+      ],
+      [
+        "Destination Port",
+        0.005468785184663567
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.005239992612347778
+      ],
+      [
+        "Fwd Packet Length Mean",
+        0.0048782964466607594
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.004554198446154346
+      ]
+    ],
+    "gini_rank_dst_port": 15,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.45538489648649005,
+      "spearman_p": 0.0006933791649236193,
+      "spearman_rho_shap_vs_N_f1": 0.5358149065141297,
+      "precision_at_5_Nacc": 0.2,
+      "precision_at_10_Nacc": 0.6,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Packet Length Variance",
+          "Packet Length Std",
+          "Bwd Packet Length Mean",
+          "Average Packet Size",
+          "Bwd Packet Length Max",
+          "Fwd Packet Length Max",
+          "Fwd Packet Length Mean",
+          "Subflow Fwd Bytes"
+        ],
+        "count": 8
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [
+          "Bwd Packet Length Max"
+        ],
+        "count": 1
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.0026839999999999087,
+      "Packet Length Variance": 8.000000000008e-06,
+      "Packet Length Std": 1.2000000000012001e-05,
+      "Bwd Packet Length Mean": 0.000136000000000136,
+      "Average Packet Size": 0.00011200000000000099,
+      "Bwd Packet Length Max": 0.00010399999999988196,
+      "Destination Port": 0.0034359999999998836,
+      "Fwd Packet Length Max": 5.199999999994098e-05,
+      "Fwd Packet Length Mean": 0.00011200000000000099,
+      "Subflow Fwd Bytes": 0.00013599999999991397
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.013506290399419973,
+      "Packet Length Variance": 0.008627767132483477,
+      "Packet Length Std": 0.008123299784950855,
+      "Bwd Packet Length Mean": 0.010054677390019195,
+      "Average Packet Size": 0.013433016931381103,
+      "Bwd Packet Length Max": 0.0014028439700192186,
+      "Destination Port": 0.05325636991850258,
+      "Fwd Packet Length Max": 0.010169976132136216,
+      "Fwd Packet Length Mean": 0.010156521703540533,
+      "Subflow Fwd Bytes": 0.011812482742271868
+    },
+    "runtime_seconds": 195.68680143356323,
+    "shap_seconds": 21.849287748336792
+  },
+  "default_seed2": {
+    "seed": 2,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "min_samples_leaf": 20
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9976952380952381,
+      "test_macro_f1": 0.9130876565569672,
+      "eval_subset_accuracy": 0.99762,
+      "eval_subset_macro_f1": 0.9179742087487127,
+      "per_class_recall": {
+        "Bots": 0.35185185185185186,
+        "Brute Force": 0.9593175853018373,
+        "DDoS": 0.9970932958274731,
+        "DoS": 0.9907068954835512,
+        "Normal Traffic": 0.9993525690974928,
+        "Port Scanning": 0.9964266807834833,
+        "Web Attacks": 0.848314606741573
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.002971428571428514,
+      "acc_drop_std": 0.00010184243755020366,
+      "f1_drop_mean": 0.047254964019159185,
+      "f1_drop_std": 0.0014501759015579769
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.04938271604938271,
+      "Brute Force": 0.38188976377952755,
+      "DDoS": 0.00037505860290676374,
+      "DoS": 0.016231955888730498,
+      "Normal Traffic": 0.000338039143786939,
+      "Port Scanning": 0.000264690312334559,
+      "Web Attacks": 0.022471910112359494
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.0026720000000000077,
+      "f1_drop_mean": 0.044070978429811
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.0026720000000000077
+      ],
+      [
+        "Fwd IAT Min",
+        0.0021359999999999157
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.0016520000000000978
+      ],
+      [
+        "Fwd Header Length",
+        0.0008119999999999239
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.0005439999999998779
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.00036400000000003097
+      ],
+      [
+        "Bwd Packet Length Max",
+        0.00029999999999996696
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.00028399999999983994
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00025999999999981593
+      ],
+      [
+        "Max Packet Length",
+        0.000256000000000034
+      ]
+    ],
+    "shap_rank_dst_port": 8,
+    "shap_dst_port_mean_abs": 0.005430407674377856,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.01120654721895237
+      ],
+      [
+        "Packet Length Variance",
+        0.007561935380424093
+      ],
+      [
+        "Packet Length Std",
+        0.006902149049026457
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.0066974262913418615
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.006680946906836913
+      ],
+      [
+        "Max Packet Length",
+        0.005640612513557498
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.0055232673057267435
+      ],
+      [
+        "Destination Port",
+        0.005430407674377856
+      ],
+      [
+        "Average Packet Size",
+        0.004549642293578934
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.004243029944193522
+      ]
+    ],
+    "gini_rank_dst_port": 14,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.6797463947815554,
+      "spearman_p": 3.000063728967985e-08,
+      "spearman_rho_shap_vs_N_f1": 0.5214718688636557,
+      "precision_at_5_Nacc": 0.2,
+      "precision_at_10_Nacc": 0.5,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Bwd Packet Length Std",
+          "Packet Length Variance",
+          "Packet Length Std",
+          "Fwd Packet Length Max",
+          "Bwd Packet Length Mean",
+          "Max Packet Length",
+          "Subflow Fwd Bytes",
+          "Average Packet Size",
+          "Total Length of Fwd Packets"
+        ],
+        "count": 9
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [],
+        "count": 0
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.0016520000000000978,
+      "Packet Length Variance": 0.00021999999999988695,
+      "Packet Length Std": 0.00018399999999985095,
+      "Fwd Packet Length Max": 0.00028399999999983994,
+      "Bwd Packet Length Mean": 0.00036400000000003097,
+      "Max Packet Length": 0.000256000000000034,
+      "Subflow Fwd Bytes": 0.00023200000000000998,
+      "Destination Port": 0.0026720000000000077,
+      "Average Packet Size": 0.00023199999999978793,
+      "Total Length of Fwd Packets": 0.000216000000000105
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.014032598721667067,
+      "Packet Length Variance": 0.014228001377642463,
+      "Packet Length Std": 0.007278803452026805,
+      "Fwd Packet Length Max": 0.01142122431623338,
+      "Bwd Packet Length Mean": 0.010559798057604541,
+      "Max Packet Length": 0.011645301195907343,
+      "Subflow Fwd Bytes": 0.013876964959034677,
+      "Destination Port": 0.044070978429811,
+      "Average Packet Size": 0.010522229334145261,
+      "Total Length of Fwd Packets": 0.010064198178553863
+    },
+    "runtime_seconds": 192.85903811454773,
+    "shap_seconds": 20.98231053352356
+  },
+  "default_seed3": {
+    "seed": 3,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 20,
+      "min_samples_leaf": 20
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9977047619047619,
+      "test_macro_f1": 0.9207694218606706,
+      "eval_subset_accuracy": 0.9977,
+      "eval_subset_macro_f1": 0.9001878489285919,
+      "per_class_recall": {
+        "Bots": 0.4567901234567901,
+        "Brute Force": 0.963254593175853,
+        "DDoS": 0.9979371776840131,
+        "DoS": 0.9895917229415774,
+        "Normal Traffic": 0.9993296511894394,
+        "Port Scanning": 0.9964266807834833,
+        "Web Attacks": 0.8202247191011236
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.002478571428571441,
+      "acc_drop_std": 5.3335459141307e-05,
+      "f1_drop_mean": 0.03064253860945454,
+      "f1_drop_std": 0.0022889911952995003
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.11728395061728392,
+      "Brute Force": 0.19947506561679795,
+      "DDoS": 0.0015939990623534683,
+      "DoS": 0.019019887243665212,
+      "Normal Traffic": 0.00019480221845347145,
+      "Port Scanning": 0.00013234515616722398,
+      "Web Attacks": 0.005617977528089901
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.0023599999999998067,
+      "f1_drop_mean": 0.028625871661202673
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.0023599999999998067
+      ],
+      [
+        "Fwd IAT Min",
+        0.0022280000000000078
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.000480000000000147
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.000448000000000115
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00033999999999989594
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.00031199999999986794
+      ],
+      [
+        "Fwd Header Length",
+        0.000284000000000062
+      ],
+      [
+        "Average Packet Size",
+        0.00026799999999993496
+      ],
+      [
+        "Packet Length Std",
+        0.00025599999999992296
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.00021999999999999797
+      ]
+    ],
+    "shap_rank_dst_port": 9,
+    "shap_dst_port_mean_abs": 0.004365813663005149,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.009914904454785012
+      ],
+      [
+        "Packet Length Std",
+        0.007378262199838932
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.00712824983097745
+      ],
+      [
+        "Packet Length Variance",
+        0.007039431433971307
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.005739791661997797
+      ],
+      [
+        "Average Packet Size",
+        0.0049263571203776715
+      ],
+      [
+        "Max Packet Length",
+        0.004819145858743839
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.0048108783330970675
+      ],
+      [
+        "Destination Port",
+        0.004365813663005149
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.0041635788664387725
+      ]
+    ],
+    "gini_rank_dst_port": 21,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.6692854735050806,
+      "spearman_p": 5.8143942819217665e-08,
+      "spearman_rho_shap_vs_N_f1": 0.5397109988209401,
+      "precision_at_5_Nacc": 0.2,
+      "precision_at_10_Nacc": 0.6,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Bwd Packet Length Std",
+          "Packet Length Std",
+          "Bwd Packet Length Mean",
+          "Packet Length Variance",
+          "Total Length of Fwd Packets",
+          "Average Packet Size",
+          "Max Packet Length",
+          "Fwd Packet Length Max",
+          "Subflow Fwd Bytes"
+        ],
+        "count": 9
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [
+          "Bwd Packet Length Mean"
+        ],
+        "count": 1
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.000448000000000115,
+      "Packet Length Std": 0.00025599999999992296,
+      "Bwd Packet Length Mean": 0.00021999999999999797,
+      "Packet Length Variance": 0.00019199999999996997,
+      "Total Length of Fwd Packets": 0.00031199999999986794,
+      "Average Packet Size": 0.00026799999999993496,
+      "Max Packet Length": 0.000172000000000061,
+      "Fwd Packet Length Max": 0.000176000000000065,
+      "Destination Port": 0.0023599999999998067,
+      "Subflow Fwd Bytes": 0.000204000000000093
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.009286459485546072,
+      "Packet Length Std": 0.009946153506625421,
+      "Bwd Packet Length Mean": 0.004789466882370141,
+      "Packet Length Variance": 0.011798867864311724,
+      "Total Length of Fwd Packets": 0.015754819370937923,
+      "Average Packet Size": 0.009156515224988393,
+      "Max Packet Length": 0.006243369208376426,
+      "Fwd Packet Length Max": 0.0069797244650130486,
+      "Destination Port": 0.028625871661202673,
+      "Subflow Fwd Bytes": 0.011243475242253886
+    },
+    "runtime_seconds": 189.9339668750763,
+    "shap_seconds": 20.671565294265747
+  },
+  "alt_d30l5_seed0": {
+    "seed": 0,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 30,
+      "min_samples_leaf": 5
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9985190476190476,
+      "test_macro_f1": 0.9488327125093264,
+      "eval_subset_accuracy": 0.9987,
+      "eval_subset_macro_f1": 0.9530261210275212,
+      "per_class_recall": {
+        "Bots": 0.5432098765432098,
+        "Brute Force": 0.9881889763779528,
+        "DDoS": 0.9985935302390999,
+        "DoS": 0.994362183260021,
+        "Normal Traffic": 0.9994213228216529,
+        "Port Scanning": 0.9984118581259925,
+        "Web Attacks": 0.949438202247191
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.00634428571428558,
+      "acc_drop_std": 9.100223016877618e-05,
+      "f1_drop_mean": 0.07016870967861566,
+      "f1_drop_std": 0.0014940649866153318
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.191358024691358,
+      "Brute Force": 0.3595800524934384,
+      "DDoS": 0.02812939521800284,
+      "DoS": 0.03692460194535652,
+      "Normal Traffic": 0.00044116973002705784,
+      "Port Scanning": 0.000529380624669118,
+      "Web Attacks": 0.028089887640449396
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.006012000000000017,
+      "f1_drop_mean": 0.06053766466559918
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.006012000000000017
+      ],
+      [
+        "Fwd IAT Min",
+        0.0034000000000000696
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.001120000000000121
+      ],
+      [
+        "Fwd Header Length",
+        0.0007320000000000659
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.0006199999999999539
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00044400000000011097
+      ],
+      [
+        "Packet Length Variance",
+        0.00024000000000001798
+      ],
+      [
+        "Fwd Packet Length Mean",
+        0.00023199999999989895
+      ],
+      [
+        "min_seg_size_forward",
+        0.00023199999999989895
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.000204000000000093
+      ]
+    ],
+    "shap_rank_dst_port": 5,
+    "shap_dst_port_mean_abs": 0.0066332603716097865,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.009295083766746186
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.00784545368442381
+      ],
+      [
+        "Packet Length Variance",
+        0.007060558132649382
+      ],
+      [
+        "Packet Length Std",
+        0.006664945627825393
+      ],
+      [
+        "Destination Port",
+        0.0066332603716097865
+      ],
+      [
+        "Packet Length Mean",
+        0.005778857481380416
+      ],
+      [
+        "Average Packet Size",
+        0.005465078911526638
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.004990980871077533
+      ],
+      [
+        "Max Packet Length",
+        0.0048260056708852375
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.004712781606071209
+      ]
+    ],
+    "gini_rank_dst_port": 13,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.7667442799854667,
+      "spearman_p": 3.428518757059417e-11,
+      "spearman_rho_shap_vs_N_f1": 0.5925894305472551,
+      "precision_at_5_Nacc": 0.4,
+      "precision_at_10_Nacc": 0.4,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Bwd Packet Length Std",
+          "Bwd Packet Length Mean",
+          "Packet Length Variance",
+          "Packet Length Std",
+          "Packet Length Mean",
+          "Average Packet Size",
+          "Total Length of Fwd Packets",
+          "Max Packet Length",
+          "Fwd Packet Length Max"
+        ],
+        "count": 9
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [],
+        "count": 0
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.001120000000000121,
+      "Bwd Packet Length Mean": 0.000200000000000089,
+      "Packet Length Variance": 0.00024000000000001798,
+      "Packet Length Std": 0.000196000000000085,
+      "Destination Port": 0.006012000000000017,
+      "Packet Length Mean": 0.000144000000000033,
+      "Average Packet Size": 0.000192000000000081,
+      "Total Length of Fwd Packets": 0.000204000000000093,
+      "Max Packet Length": 0.00012399999999990197,
+      "Fwd Packet Length Max": 0.000152000000000152
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.011334707064659333,
+      "Bwd Packet Length Mean": 0.012699454927526443,
+      "Packet Length Variance": 0.01808064292143463,
+      "Packet Length Std": 0.0160131096989532,
+      "Destination Port": 0.06053766466559918,
+      "Packet Length Mean": 0.009706116502585793,
+      "Average Packet Size": 0.012400168491124686,
+      "Total Length of Fwd Packets": 0.012514821441673818,
+      "Max Packet Length": 0.01000529803720196,
+      "Fwd Packet Length Max": 0.010710698367559002
+    },
+    "runtime_seconds": 217.65763807296753,
+    "shap_seconds": 44.017444133758545
+  },
+  "alt_d30l5_seed1": {
+    "seed": 1,
+    "rf": {
+      "n_estimators": 100,
+      "max_depth": 30,
+      "min_samples_leaf": 5
+    },
+    "n_train": 490000,
+    "n_test": 210000,
+    "n_eval_subset": 50000,
+    "n_shap": 1000,
+    "baseline": {
+      "test_accuracy": 0.9984047619047619,
+      "test_macro_f1": 0.9382003212973399,
+      "eval_subset_accuracy": 0.99844,
+      "eval_subset_macro_f1": 0.9469260093303852,
+      "per_class_recall": {
+        "Bots": 0.47530864197530864,
+        "Brute Force": 0.9921259842519685,
+        "DDoS": 0.9981247069854665,
+        "DoS": 0.9946719534105694,
+        "Normal Traffic": 0.9993582985745061,
+        "Port Scanning": 0.9982792852415618,
+        "Web Attacks": 0.9273743016759777
+      }
+    },
+    "N_dst_port_full_test": {
+      "acc_drop_mean": 0.004701904761904685,
+      "acc_drop_std": 7.799063842885079e-05,
+      "f1_drop_mean": 0.05736847474071538,
+      "f1_drop_std": 0.0025310838676411936
+    },
+    "dst_port_per_class_recall_drop": {
+      "Bots": 0.154320987654321,
+      "Brute Force": 0.35564304461942253,
+      "DDoS": 0.003281762775433683,
+      "DoS": 0.033579084319435015,
+      "Normal Traffic": 0.0005099234541871001,
+      "Port Scanning": 0.0,
+      "Web Attacks": 0.011173184357541888
+    },
+    "N_dst_port_eval_subset": {
+      "acc_drop_mean": 0.0047880000000000145,
+      "f1_drop_mean": 0.06307378092625693
+    },
+    "N_rank_dst_port_acc": 1,
+    "N_rank_dst_port_f1": 2,
+    "necessity_top10_acc": [
+      [
+        "Destination Port",
+        0.0047880000000000145
+      ],
+      [
+        "Fwd IAT Min",
+        0.0035520000000001106
+      ],
+      [
+        "Bwd Packet Length Std",
+        0.0012559999999999238
+      ],
+      [
+        "Init_Win_bytes_forward",
+        0.0007119999999999349
+      ],
+      [
+        "Fwd Header Length",
+        0.0005920000000000369
+      ],
+      [
+        "Init_Win_bytes_backward",
+        0.00032799999999988394
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.00024799999999991496
+      ],
+      [
+        "Packet Length Variance",
+        0.000216000000000105
+      ],
+      [
+        "Total Length of Fwd Packets",
+        0.00020399999999998197
+      ],
+      [
+        "Fwd Packet Length Mean",
+        0.00019199999999996997
+      ]
+    ],
+    "shap_rank_dst_port": 6,
+    "shap_dst_port_mean_abs": 0.005760542786886902,
+    "shap_top10": [
+      [
+        "Bwd Packet Length Std",
+        0.009959120577484517
+      ],
+      [
+        "Packet Length Variance",
+        0.007808804578975471
+      ],
+      [
+        "Average Packet Size",
+        0.0068408765393418725
+      ],
+      [
+        "Packet Length Std",
+        0.006562378185279521
+      ],
+      [
+        "Bwd Packet Length Mean",
+        0.006092690350941351
+      ],
+      [
+        "Destination Port",
+        0.005760542786886902
+      ],
+      [
+        "Bwd Packet Length Max",
+        0.005583282858173928
+      ],
+      [
+        "Fwd Packet Length Max",
+        0.004969885130362556
+      ],
+      [
+        "Fwd Packet Length Mean",
+        0.00496160628407504
+      ],
+      [
+        "Subflow Fwd Bytes",
+        0.00472553007988547
+      ]
+    ],
+    "gini_rank_dst_port": 14,
+    "audit": {
+      "spearman_rho_shap_vs_N_acc": 0.6563034421506502,
+      "spearman_p": 1.2753270179230335e-07,
+      "spearman_rho_shap_vs_N_f1": 0.4863826517544608,
+      "precision_at_5_Nacc": 0.2,
+      "precision_at_10_Nacc": 0.5,
+      "false_confidence_acc_only": {
+        "criterion": "N_acc < 0.002",
+        "features": [
+          "Bwd Packet Length Std",
+          "Packet Length Variance",
+          "Average Packet Size",
+          "Packet Length Std",
+          "Bwd Packet Length Mean",
+          "Bwd Packet Length Max",
+          "Fwd Packet Length Max",
+          "Fwd Packet Length Mean",
+          "Subflow Fwd Bytes"
+        ],
+        "count": 9
+      },
+      "false_confidence_dual": {
+        "criterion": "N_acc < 0.002 and N_f1 < 0.005",
+        "features": [
+          "Bwd Packet Length Max"
+        ],
+        "count": 1
+      }
+    },
+    "N_acc_of_shap_top10": {
+      "Bwd Packet Length Std": 0.0012559999999999238,
+      "Packet Length Variance": 0.000216000000000105,
+      "Average Packet Size": 0.00017599999999995397,
+      "Packet Length Std": 0.00019199999999996997,
+      "Bwd Packet Length Mean": 0.00019199999999996997,
+      "Destination Port": 0.0047880000000000145,
+      "Bwd Packet Length Max": 9.599999999998499e-05,
+      "Fwd Packet Length Max": 0.00013999999999991797,
+      "Fwd Packet Length Mean": 0.00019199999999996997,
+      "Subflow Fwd Bytes": 0.00024799999999991496
+    },
+    "N_f1_of_shap_top10": {
+      "Bwd Packet Length Std": 0.00874653114684154,
+      "Packet Length Variance": 0.024099451488795665,
+      "Average Packet Size": 0.013968483788393327,
+      "Packet Length Std": 0.01923701471821382,
+      "Bwd Packet Length Mean": 0.013978532521577547,
+      "Destination Port": 0.06307378092625693,
+      "Bwd Packet Length Max": 0.004239972333848541,
+      "Fwd Packet Length Max": 0.00973938181626488,
+      "Fwd Packet Length Mean": 0.021477423063133827,
+      "Subflow Fwd Bytes": 0.023004972283517167
+    },
+    "runtime_seconds": 214.97531867027283,
+    "shap_seconds": 42.972116231918335
+  },
+  "aggregate": {
+    "runs_included": [
+      "default_seed0",
+      "default_seed1",
+      "default_seed2",
+      "default_seed3",
+      "alt_d30l5_seed0",
+      "alt_d30l5_seed1"
+    ],
+    "seed0_exact_reproduction": true,
+    "baseline_acc_mean_sd": [
+      0.9979896825396826,
+      0.000374413121010989
+    ],
+    "baseline_f1_mean_sd": [
+      0.9242785685492861,
+      0.015683960741869875
+    ],
+    "N_dst_port_acc_drop_mean_sd": [
+      0.004052936507936459,
+      0.0013953134846092727
+    ],
+    "N_dst_port_f1_drop_mean_sd": [
+      0.051790755143995226,
+      0.013289505686070737
+    ],
+    "bruteforce_recall_drop_mean_sd": [
+      0.352580927384077,
+      0.0810070308689562
+    ],
+    "shap_rank_mean_sd": [
+      6.666666666666667,
+      1.632993161855452
+    ],
+    "shap_rank_values": [
+      5,
+      7,
+      8,
+      9,
+      5,
+      6
+    ],
+    "gini_rank_values": [
+      13,
+      15,
+      14,
+      21,
+      13,
+      14
+    ],
+    "N_acc_rank_values": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "N_f1_rank_values": [
+      2,
+      2,
+      2,
+      2,
+      2,
+      2
+    ],
+    "fc_acc_only_count_mean_sd": [
+      8.833333333333334,
+      0.408248290463863
+    ],
+    "fc_acc_only_count_values": [
+      9,
+      8,
+      9,
+      9,
+      9,
+      9
+    ],
+    "fc_dual_count_values": [
+      0,
+      1,
+      0,
+      1,
+      0,
+      1
+    ],
+    "rho_shap_Nacc_mean_sd": [
+      0.6525043165679306,
+      0.10409035152087553
+    ],
+    "verdicts": {
+      "N_rank1_every_run": true,
+      "shap_buries_rank_ge4_every_run": true,
+      "fc_acc_only_ge8_every_run": true,
+      "bruteforce_gt25pp_every_run": false
+    }
+  }
+}

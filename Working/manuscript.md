@@ -1,0 +1,780 @@
+# Protocol-Valid Faithfulness Evaluation for ML-Based Network Traffic Classifiers
+
+**Nakul Sinha**
+
+*Manuscript prepared for IEEE Transactions on Network and Service Management (TNSM).
+Citations use keys resolving against `references.bib`; figures are in `figures/`.*
+
+---
+
+## Abstract
+
+Deep learning has become the default tool for network traffic classification and intrusion
+detection, and with it a large literature that attaches post-hoc explanation methods (SHAP, LIME,
+saliency) to these models to make them trustworthy. That literature almost never checks whether the
+explanations are *correct*: in a survey of 107 works, only five define any explanation-quality
+metric, and none has a dataset with ground-truth feature importance. We show that the standard way
+faithfulness *is* measured elsewhere — deletion/occlusion of "important" features — is not merely
+unvalidated for network traffic but formally invalid: setting a feature to zero produces a packet
+that violates protocol grammar (a broken checksum, an impossible length) and could never appear on a
+network, so the model is queried off-manifold. We introduce **PacketDO**, a protocol-valid
+intervention operator that resamples a protocol field from its pooled empirical marginal and
+recomputes every dependent field, yielding a counterfactual that is always a well-formed packet.
+Using PacketDO we build the first interventional ground truth for traffic classifiers — necessity,
+sufficiency, and a redundancy degree R(M) measured by intervention, not assumed — and audit eight
+widely used attribution methods (integrated gradients, gradient saliency, DeepSHAP, occlusion,
+KernelSHAP, LIME, TreeSHAP, and impurity) against it, on models with planted shortcuts of graded
+strength and on real data with documented artifacts. We find that explainers reliably rank a model's
+true shortcut at the top yet simultaneously attribute high importance to redundant features the
+model provably does not use; that even exact Shapley values (TreeSHAP) exhibit this false confidence
+when a model commits to one of several equivalent shortcuts; and that an explainer's faithfulness
+ranking can flip depending on whether features are removed by zero-masking or by PacketDO. We
+release the operator, the benchmark, and the ground-truth tables.
+
+---
+
+## 1. Introduction
+
+Machine learning now underpins a large fraction of deployed network traffic analysis: encrypted
+traffic classification, application identification, and network intrusion detection are all dominated
+by deep models that operate on raw packet bytes or on flow-level feature vectors
+[@wang2017endtoend; @lotfollahi2020deeppacket; @lin2022etbert]. Because these
+models are opaque and because operators are reluctant to act on decisions they cannot interrogate, a
+second, rapidly growing literature attaches post-hoc explanation methods — SHAP, LIME, gradient
+saliency, attention maps — to traffic classifiers, and presents the resulting feature-importance
+scores as evidence that the model is trustworthy. This explainability literature is now large enough
+to have its own surveys [@nascita2025survey].
+
+What almost none of it does is check whether the explanations are *correct*. In a recent systematic
+survey of 107 works on explainable AI for network traffic analysis [@nascita2025survey], only five
+define any explanation-quality metric at all, and the survey reports that no public traffic dataset
+carries ground-truth feature importance against which an explanation could be scored. In practice,
+explanations are displayed as plots and declared meaningful. The few papers that do attempt a
+quantitative check substitute a proxy: either agreement with what a human analyst expects (which
+measures plausibility, not faithfulness [@jacovi2020towards]), or a deletion test that removes the
+features an explainer called important and measures how much the prediction changes.
+
+This deletion test is the standard notion of faithfulness imported from computer vision and NLP
+[@samek2017evaluating; @deyoung2020eraser], and
+it is the quiet foundation under most quantitative claims in the field. Our starting observation is
+that it is not merely unvalidated for network traffic — it is invalid. Removing a feature by setting
+it to zero, the default in every deletion, occlusion, and AOPC-style metric, produces a byte string
+that is no longer a well-formed packet: its header checksum no longer matches its contents, or its
+length field disagrees with its actual length. Such a packet could never appear on a network, so the
+model is being queried far outside the distribution it was trained on, and the resulting "importance"
+is partly an artifact of that extrapolation. The problem is strictly worse than the analogous
+critique in vision [@hooker2019benchmark; @rong2022consistent], because a packet's fields are bound
+to one another by protocol grammar: you
+cannot change one field and leave the rest untouched and still have a legal packet.
+
+There is a second, deeper problem that the traffic-classification setting makes unusually visible.
+Traffic datasets are riddled with *shortcuts* [@geirhos2020shortcut] — features that predict the
+label in the dataset
+without reflecting any real property of the traffic, such as the fixed time-to-live of the machine
+that generated a class of attacks, or an artifact of the flow-metering tool
+[@engelen2021troubleshooting]. A model that learns a
+shortcut can be perfectly accurate on held-out data and still be wrong about the world. The most
+striking published demonstration of the danger for explanations comes from TRUSTEE
+[@jacobs2022trustee]: a decision-tree
+surrogate that reproduced a traffic classifier's decisions with perfect fidelity (an F1 of 1.00)
+identified three specific header bytes as the basis of its decisions; yet when the authors tampered
+with exactly those three bytes, the model's accuracy did not move, because it had learned several
+mutually substitutable shortcuts and simply fell back on another. A perfect-fidelity explanation was
+causally wrong. This failure mode — redundant shortcuts that make the target of an explanation
+non-unique — has never been systematically measured, in traffic classification or anywhere else.
+
+The two literatures that would need to meet in order to address this do not. On one side, the
+explainability-for-security literature produces attributions and never intervenes on the model to
+check them. On the other, a rigour-focused strand of networking research (TRUSTEE
+[@jacobs2022trustee], the 2025 IEEE
+S&P systematization of encrypted-traffic classifiers [@wickramasinghe2025sok], and recent
+shortcut-detection frameworks [@wang2026biasseeker; @zhao2026shortcutcatcher])
+routinely intervenes on traffic — occluding fields, tampering bytes, ablating features — to expose
+what models really use, but never calls these interventions explanations and never evaluates an
+explainer with them. As a concrete measure of the gap: the S&P 2025 systematization runs 348 feature
+occlusion experiments and contains not a single occurrence of the words explainable, interpretable,
+SHAP, attribution, or saliency.
+
+We argue that networking is, in fact, the ideal setting in which to close this gap, for a reason that
+does not hold in vision or NLP: interventional ground truth for explanations can be constructed
+exactly and on-manifold. Protocol field semantics are known, so an attribution has a defined
+referent; and packets are rewritable, so a field can be set to a chosen value and the packet
+regenerated as a legal packet. Ground-truth evaluation of feature attribution has been established in
+vision (by pasting known objects into images [@yang2019bam]) and in NLP (by injecting known lexical
+shortcuts into text [@bastings2022shortcuts]), and in both cases it revealed that popular attribution
+methods produce false-positive explanations. Neither has ever been done for network traffic — the one
+modality where the intervention that defines the ground truth is exact, protocol-structured, and
+produces inputs the model could actually receive.
+
+This paper builds that missing instrument and uses it. Our contributions are:
+
+- **PacketDO (Section 3):** a protocol-valid intervention operator. It sets a chosen protocol field
+  to a value resampled from the field's pooled empirical distribution and recomputes every field that
+  structurally depends on it — checksums, lengths, offsets — so the counterfactual is always a
+  well-formed packet. We show experimentally (E1, Section 5.1) that on synthetic packets the deletion
+  default produces a protocol-valid counterfactual in only 22.4% of field interventions (macro
+  averaged over 15 fields; 10 of 15 fields are at exactly 0% validity and an 11th, the payload, at
+  0.6%), versus 100% for PacketDO, because zeroing a
+  field breaks its checksum.
+
+- **An interventional ground-truth benchmark (Sections 3–4):** using PacketDO we define and measure,
+  for a trained model, the necessity and sufficiency of each protocol field and a redundancy degree
+  R(M) — the number of disjoint, individually-sufficient shortcut sets the model holds. These are
+  measured by intervention, not assumed. The benchmark combines synthetic traffic with shortcuts
+  planted at graded strength (extending the binary shortcut-injection protocol from NLP
+  [@bastings2022shortcuts] to a graded, packet-level one) with real data carrying documented
+  artifacts.
+
+- **An audit of eight widely used explainers against that ground truth (Section 5),** reporting for
+  each how well its attribution ranking matches interventional necessity, how often it confidently
+  attributes importance to a field the model provably does not use (false-confidence rate), and how
+  often it misses a field the model does use (blind-spot rate). The eight are integrated gradients,
+  gradient saliency, DeepSHAP, occlusion, KernelSHAP, LIME, TreeSHAP, and random-forest impurity.
+  (Our original plan listed six methods including DeepLIFT; DeepLIFT was replaced by the two
+  perturbation-based methods KernelSHAP and LIME, which probe the off-manifold question more
+  directly.)
+
+- **The operator-sensitivity result (Section 6):** we show that an explainer's measured faithfulness
+  can depend on whether features are removed by zero-masking or by PacketDO, so that faithfulness
+  comparisons in the literature that used the zero-masking operator are called into question.
+
+Our findings are not that explanations are useless. They reliably surface a model's true shortcut as
+a top-ranked feature. The danger we quantify is subtler and, for an operator staking a decision on an
+explanation, more insidious: explainers simultaneously assign high importance to redundant features
+the model does not use, and they cannot be told apart from the used feature by inspection; even exact
+Shapley values exhibit this when a model commits to one of several equivalent shortcuts. Because
+deployed systems now take real actions on these attributions — generating intrusion-response rules
+[@wei2023xnids], deleting features from training pipelines [@zhao2026shortcutcatcher], presenting
+features to human analysts — getting the
+faithfulness question right is not a matter of tidier figures. We release the operator, the
+benchmark, and the ground-truth tables so that new explainers and new classifiers can be scored
+against a reference that reflects what a model does, not what a dataset happens to correlate with.
+
+## 2. Related work
+
+We position our contribution against seven lines of work. The through-line is that each supplies one
+ingredient of interventional, ground-truth explanation evaluation for network traffic, and none
+combines them.
+
+**Ground-truth evaluation of attributions in other modalities.** The idea of manufacturing a known
+feature importance and checking whether an attribution method recovers it originates outside
+networking. BAM/BIM [@yang2019bam] pastes a known object into every image of a class so that its
+relative importance
+is known a priori, and finds that common attribution methods produce false-positive explanations.
+Bastings et al. [@bastings2022shortcuts] inject a lexical shortcut into text with a controlled
+probability, verify
+behaviourally that the model learned it, and score salience methods on recovering it, concluding that
+several popular configurations fail even for simple shortcuts. Debugging Tests
+[@adebayo2020debugging] constructs
+spurious-correlation and mislabelling bugs with known ground-truth masks. Our synthetic benchmark is
+this protocol carried, for the first time, to network packets, and extended from a binary
+shortcut-recovery test to a graded one: we plant shortcuts at four strengths and measure a continuous
+interventional necessity rather than a present/absent flag, which exposes methods that fabricate
+importance precisely when the true signal is weak.
+
+**Interventions on traffic classifiers.** Networking research already intervenes on traffic to probe
+models. TRUSTEE [@jacobs2022trustee] extracts a high-fidelity decision-tree surrogate and, in one
+case study, tampers with
+the bytes it identifies to reveal redundant shortcuts — the observation that motivates our
+redundancy measure, but which TRUSTEE treats as a validation footnote rather than a method. The 2025
+IEEE S&P systematization of encrypted-traffic classifiers [@wickramasinghe2025sok] runs a large
+occlusion study to expose
+overfitting and dataset leakage, but never connects it to explanation methods. Closest to us,
+Traffic-Explainer [@ponraj2026trafficexplainer] performs checksum-preserving byte swaps and even
+notes that the swapped packets
+remain valid; however, it swaps only the bytes its own explainer nominated, which is a confirmatory
+test that can establish sufficiency of a chosen set but cannot detect a blind spot (a used field the
+method missed) or a redundant alternative (a disjoint set that is equally sufficient). We invert the
+direction of inference: we build an independent interventional reference over all fields and audit
+every explainer against it.
+
+**Removal-operator critiques.** The unreliability of deletion-style faithfulness is known in the
+attribution-evaluation literature. ROAR [@hooker2019benchmark] shows that removing-and-retraining
+changes conclusions; ROAD [@rong2022consistent]
+shows that fixed-value or zero masking — the network-traffic default — is the worst imputation and
+that better imputations rely on pixel-neighbourhood structure with no packet analogue; Samek et al.
+[@samek2017evaluating] document that the removal scheme changes the AOPC ranking. None of this work
+adapts the operator to
+protocol-constrained inputs, and the resulting protocol-valid removal operator is precisely what we
+supply.
+
+**Shortcut detection that trusts explainers.** A recent strand hunts shortcuts in traffic datasets or
+models. BiasSeeker [@wang2026biasseeker] detects dataset-specific shortcut features by statistical
+correlation on raw
+bytes, deliberately avoiding model-specific interpretation. ShortcutCatcher
+[@zhao2026shortcutcatcher] removes features an
+explainer flags, in an iterative loop, to improve cross-scenario generalization. Both use explanation
+or importance as a trusted instrument; neither validates it. Our work is logically prior: it tests
+whether that instrument is right about the model in the first place, and the iterative nature of
+ShortcutCatcher's loop is itself indirect evidence of the redundancy our R(M) quantifies.
+
+**Plausibility metrics for security XAI.** Alquliti et al. [@alquliti2025evaluating] score SHAP
+explanations of intrusion
+detectors against feature sets derived from MITRE ATT&CK and D3FEND, and find poor alignment. This
+measures plausibility — agreement with what a domain expert expects — which, following the standard
+faithfulness/plausibility distinction [@jacovi2020towards], is orthogonal to whether the explanation
+reflects the model.
+On a shortcut-driven classifier the two can even move in opposite directions, because the model's
+real basis is a non-semantic artifact; measuring the causal axis they cannot is a direct complement
+to their work.
+
+**Evaluation frameworks for explanations in security.** Warnecke et al. [@warnecke2020evaluating]
+propose six criteria for
+comparing explanation methods in computer security and, lacking ground-truth relevance, adopt a
+deletion-based descriptive-accuracy proxy — the same proxy whose operator we show to be
+protocol-invalid. Their framework covers malware and vulnerability detection and includes no traffic
+classifier. We supply the ground truth their proxy stands in for.
+
+**Explainer stability under correlated features.** Vourganas and Michala [@vourganas2026stabilising]
+prove that multicollinearity
+inflates the variance of SHAP attributions across resamples, making importances non-identifiable, and
+audit this on a NIDS dataset. This is a statement about the *stability* of an explainer; it is
+distinct from, and complementary to, our question of *well-posedness* — whether the model admits a
+unique feature basis at all. A perfectly stable attribution can still be causally wrong when the
+model holds redundant shortcuts, which their variance-based machinery cannot see and which our
+interventional R(M) is designed to measure.
+
+Across all seven, the missing prerequisite named repeatedly — an interventional, protocol-valid,
+ground-truth reference for explanation faithfulness in traffic classification — is the one this paper
+constructs.
+
+## 3. Method: protocol-valid intervention and interventional ground truth
+
+### 3.1 The problem with feature deletion on packets
+
+Let a classifier `M` map a packet (or a flow of packets) to a label. Post-hoc faithfulness metrics
+estimate the importance of a feature `F` by *removing* it and measuring the change in `M`'s output.
+In the byte and flow representations used for traffic, "removing" a feature has no natural meaning,
+so the literature borrows the vision convention: set the feature to a baseline, almost always zero
+[@zeiler2014visualizing; @samek2017evaluating].
+
+This is unsound for two reasons specific to network data. First, the fields of a packet are not
+independent: an IP or transport checksum is a function of the other header and payload bytes, and the
+IP total-length and TCP data-offset fields are functions of the packet's structure. Zeroing any
+field that a checksum covers — which is almost all of them — leaves the checksum inconsistent, so
+the byte string is no longer a packet any host could emit. The model is then evaluated on an input
+drawn from a region of byte space with zero probability under any real traffic distribution, and the
+"importance" it reports is confounded by that extrapolation. Second, for raw-byte models a fixed byte
+offset does not correspond to a fixed semantic field across samples: when one class carries an
+Ethernet header and another does not, byte 49 is the IP protocol field in one class and part of an
+Ethernet address in the other, so an attribution to a byte index is an attribution to a moving
+target. Section 5.1 measures how often the zero-masking operator actually produces an invalid packet.
+
+### 3.2 PacketDO
+
+We replace deletion with a protocol-valid intervention. For a field `F` and a trained, frozen model
+`M`, `PacketDO` performs the operation
+
+  do(F := f),  f ~ pooled empirical marginal of F over the whole dataset,
+
+by (i) setting `F` to the resampled value `f` on the packet, (ii) recomputing every field that
+structurally depends on `F` — the IP header checksum, the transport (TCP/UDP) checksum, the IP total
+length, the TCP data offset, and the UDP length — and (iii) re-emitting the packet through the
+protocol serializer [@scapy] so that the result is a well-formed packet. The model's own
+preprocessing is then
+re-applied: for a byte model the byte window is re-extracted from the intervened packet, and for a
+flow model the flow features are recomputed. The intervention is inference-time only; `M` is never
+retrained.
+
+Three properties make this the right null operation. It is **on-manifold**: because the field is set
+to a value drawn from real traffic and all dependent fields are recomputed, the counterfactual is a
+packet a host could send. It is **information-destroying but distribution-preserving**: sampling `f`
+class-agnostically leaves the marginal distribution of `F` unchanged while destroying its mutual
+information with the label, which is exactly the semantics of a `do()` intervention rather than a
+deletion. And it is **representation-agnostic**: the same packet-level operation drives the ground
+truth for a raw-byte CNN and for a flow-feature random forest.
+
+Not every header field is a free degree of freedom. The IP protocol number is fixed by the transport
+header that follows it (protocol 6 requires a TCP payload, 17 a UDP payload); resampling it while
+leaving the transport bytes in place yields a self-inconsistent packet, exactly as a stale checksum
+does. We therefore treat the protocol number, alongside checksums and length fields, as a structural
+field that PacketDO recomputes rather than resamples. Identifying the free degrees of freedom of a
+packet is itself part of defining what an intervention on traffic means.
+
+### 3.3 Interventional ground truth
+
+With a valid intervention in hand, we define the quantities the rest of the paper treats as ground
+truth. All are properties of the trained model `M`, measured by inference on a held-out set, not
+assumed from the data:
+
+- **Necessity** `N(F) = Acc(M) - Acc(M under do(F := resample))`: how much accuracy the model loses
+  when field `F` is stripped of its label information. A field the model does not use has `N(F) = 0`.
+- **Sufficiency** `S(F) = Acc(M under do(every field except F := resample))`: how far `F` alone
+  carries the model.
+- **Redundancy degree** `R(M)`: the number of disjoint, individually-sufficient field sets. We
+  extract a minimal sufficient set by greedy interventional removal, neutralize it, and repeat on the
+  remainder until accuracy falls to chance. `R(M) > 1` means the model holds substitutable shortcuts,
+  so no single feature set is *the* explanation and any method that returns one is under-determined.
+
+We report a **null-intervention control** with every table: a field that the data never correlates
+with the label must yield `N(F) approx 0`, which validates the estimator (resampling an unused field
+does not move accuracy) and calibrates the noise floor for the necessity estimates.
+
+### 3.4 Auditing an explainer against the ground truth
+
+An explainer produces per-feature importance in the model's own representation (per-byte for the CNN,
+per-feature for the forest). We aggregate byte-level attributions to protocol fields using the
+header-offset map, so that every explainer is scored in the same field vocabulary as `N(F)`. For a
+model-dataset cell we then report: the Spearman correlation between the attribution ranking and the
+`N(F)` ranking; precision at `k` (with `k` the number of fields whose necessity exceeds a threshold);
+the **false-confidence rate**, the fraction of fields the explainer confidently attributes importance
+to whose necessity is approximately zero; and the **blind-spot rate**, the fraction of
+truly-necessary fields the explainer leaves out of its top-`k`. False confidence and blind spots are
+the two ways an attribution can disagree with what the model actually uses, and they are the metrics
+that carry our results.
+
+## 4. Experimental setup
+
+### 4.1 Operator-validity study (E1)
+
+We generate a population of 2,000 synthetic IP/TCP and IP/UDP packets (baseline validity 100%) and
+apply, to each of 15 intervenable header and payload fields, both removal operators: zero-masking
+(overwrite the field's bytes with 0x00, recompute nothing — the deletion default) and PacketDO. A
+counterfactual counts as valid if the byte string re-parses as a packet *and* every checksum and
+length predicate holds. The validity checker is a genuine predicate, not a serializer echo: it was
+cross-validated against an independent from-scratch one's-complement (RFC 1071) checksum
+implementation, and it correctly rejects 16 of 16 adversarially corrupted probe packets. The
+operator itself is covered by a per-field unit-test suite (42 passed, 1 skipped).
+
+### 4.2 Synthetic planted-shortcut benchmark (E2–E4, E6)
+
+**Data.** Two-class scapy-generated traffic with a weak genuine signal (class-conditional payload
+length) and two *planted* artifacts, `ip.ttl` and `tcp.window`, each correlated with the label at
+effective marginal probability `0.5 + 0.5p` for planting strength `p in {0.5, 0.7, 0.9, 1.0}`.
+Because we plant the signal, the ground-truth decision basis is known, and because both artifacts
+are planted with identical strength, the data deliberately offers the model two redundant shortcuts.
+Byte models see an 80-byte window (20-byte IP header, 20-byte TCP header, up to 40 payload bytes).
+The field `tcp.sport` is never correlated with the label and serves as the null-intervention control
+(E6).
+
+**Models.** Per strength `p` we train (i) a **ByteCNN** on raw bytes — two 1-D convolutional layers
+(32 and 64 channels, kernel 3) with max-pooling, trained 40 epochs — and (ii) a **RandomForest**
+(200 trees, maximum depth 12) on named per-packet header fields. We use a 70/30 train/test split;
+interventional ground truth, explainer attributions, and reported test accuracy are all computed on
+the same 800-packet test subset, so every number in a cell refers to the same packets.
+
+**Seeds.** Every synthetic-benchmark cell is run under five seeds (0–4), each reseeding the
+train/test split, model initialization and training, and the PacketDO resampler stream; we report
+mean ± standard deviation and, where a claim is seed-contingent, the per-seed values. Aggregation is
+performed by a script that verifies the internal seed recorded in each result file against its
+filename and refuses mismatched files (Section 10).
+
+### 4.3 Real-data study (CIC-IDS2017)
+
+We use the CIC-IDS2017 flow-feature dataset [@sharafaldin2018cicids] (2,520,751 flows by 52 numeric
+features after hygiene), which carries documented labeling and flow-construction artifacts
+[@engelen2021troubleshooting; @lanvin2022errors]. We draw a stratified 700k-flow subsample with a
+70/30 split (490k train / 210k test) and train a RandomForest (100 trees, `max_depth=20`,
+`min_samples_leaf=20`). Interventions are feature-level analogues of PacketDO: `do(feature :=
+class-agnostic resample)` at the flow-feature representation. `N(dst_port)` is estimated with R=10
+resampling repeats on the full 210k test set; all-52 per-feature necessities with R=5 on a
+stratified 50k test subset; global TreeSHAP (`tree_path_dependent`) on 1,000 stratified rows. The
+false-confidence criterion is `N_acc < 0.002` (accuracy-only), with a stricter dual criterion
+additionally requiring `N_f1 < 0.005`.
+
+**Robustness protocol.** Beyond the seed-0 reference run, we repeat the full pipeline — subsample,
+split, forest training, every permutation RNG — under seeds 1–3 with the default configuration and
+under an alternative forest configuration (`max_depth=30`, `min_samples_leaf=5`) at seeds 0–1: six
+runs in total. The seed-0 default-configuration run reproduces the stored reference results
+float-identically.
+
+### 4.4 Explainers
+
+Eight attribution methods are audited. On the ByteCNN: integrated gradients
+[@sundararajan2017axiomatic], gradient saliency, DeepSHAP [@lundberg2017shap], occlusion
+[@zeiler2014visualizing], KernelSHAP [@lundberg2017shap], and LIME [@ribeiro2016lime]. On the
+RandomForest: TreeSHAP [@lundberg2017shap] and Gini impurity. Gradient methods use Captum
+[@kokhlikyan2020captum]; SHAP variants use the shap library [@shap-software]. (The experimental
+plan's DeepLIFT [@shrikumar2017deeplift] was replaced by KernelSHAP and LIME, keeping the audit at
+eight methods while adding the perturbation-based family whose sampling behaviour is directly
+relevant to the off-manifold question.) Byte-level attributions are aggregated to protocol fields
+via the header-offset map (Section 3.4).
+
+### 4.5 Metrics
+
+Per model-dataset cell: Spearman correlation between attribution and necessity rankings;
+precision@k, with k equal to the number of truly necessary fields in that cell (we state this
+convention explicitly because a fixed-k variant differs whenever a model has fewer necessary fields
+than k); false-confidence rate — the fraction of fields the explainer confidently names (attribution
+at least 0.2 of its maximum) whose necessity is at the null-control noise floor; and blind-spot rate.
+Since most fields have `N approx 0`, rank correlation is dominated by noise among zero-necessity
+fields; false confidence and precision@k are the load-bearing metrics.
+
+## 5. Results
+
+*All synthetic-benchmark false-confidence (FC) figures are mean ± sd over five seeds and were
+independently reproduced by an adversarial verification pass. Real-data figures are reported as
+seed-0 reference values accompanied by a six-run robustness sweep (four seeds × default forest
+configuration plus two seeds × an alternative deeper configuration).*
+
+### 5.1 E1: the deletion operator is protocol-invalid
+
+Over a synthetic population of 2,000 IP/TCP+UDP packets (baseline validity 100%), zero-masking — the
+deletion default — yields a protocol-valid packet for only 22.4% of intervenable fields, while
+PacketDO yields one for 100%. The macro figure is an unweighted mean over 15 fields; the per-field
+picture is sharper: 10 of 15 fields are at exactly 0% zero-mask validity (an 11th, the payload, at
+0.6%, where a handful of packets had an all-zero payload so masking is a no-op), and the fields that survive
+do so only because the generator left them zero (masking is a no-op). One field, tcp.window, is 35.4%
+valid because a window value of 0xFFFF masked to 0x0000 is invisible to the Internet checksum (0x0000
+and 0xFFFF both represent zero in one's-complement arithmetic, RFC 1071) — an arithmetic accident,
+not a principled validity. When zero-masking invalidates a packet the violated predicate is always a
+checksum, never a parse failure: the bytes still parse, so a model consumes them and returns a
+confident prediction on an impossible input.
+
+**Table I. Per-field protocol-validity of counterfactuals: zero-mask vs PacketDO (2000 synthetic packets, seed 0).**
+
+| field | zero-mask valid | PacketDO valid |
+|---|---|---|
+| ip.ttl | 0.0% | 100.0% |
+| ip.tos | 100.0% | 100.0% |
+| ip.id | 0.0% | 100.0% |
+| ip.flags | 100.0% | 100.0% |
+| ip.src | 0.0% | 100.0% |
+| ip.dst | 0.0% | 100.0% |
+| tcp.sport | 0.0% | 100.0% |
+| tcp.dport | 0.0% | 100.0% |
+| tcp.seq | 0.0% | 100.0% |
+| tcp.ack | 100.0% | 100.0% |
+| tcp.flags | 0.0% | 100.0% |
+| tcp.window | 35.4% | 100.0% |
+| udp.sport | 0.0% | 100.0% |
+| udp.dport | 0.0% | 100.0% |
+| payload | 0.6% | 100.0% |
+| **macro** | **22.4%** | **100.0%** |
+
+
+![Fig 1. Per-field protocol-validity of counterfactuals under zero-masking vs PacketDO.](figures/fig1_operator_validity.png)
+
+*Fig 1. Per-field protocol-validity of counterfactuals under zero-masking vs PacketDO. Zero-masking
+is valid only where it is a no-op; PacketDO is valid by construction.*
+
+### 5.2 E3: models rely on the planted artifacts; the null control is clean
+
+The ByteCNN's interventional necessity for the planted tcp.window shortcut rises from 0.273 ± 0.011
+at planting strength p=0.5 to 0.501 ± 0.020 at p=1.0, while its necessity for the equally-predictive
+ip.ttl shortcut stays at or below 0.004: given two perfectly-correlated shortcuts the model commits to
+one and ignores the other, so its redundancy degree R(M)=1 even though the data offers two. The
+null-intervention control (tcp.sport, never correlated with the label) stays within ±0.006 of zero
+in every cell, calibrating the estimator's noise floor.
+
+![Fig 3. Interventional necessity N(F).](figures/fig3_necessity.png)
+
+*Fig 3. Interventional necessity N(F). Models commit to tcp.window and ignore the redundant ip.ttl;
+the null field tcp.sport stays at zero.*
+
+### 5.3 E4: explainers find the shortcut but fabricate importance
+
+Every explainer ranks the model's true shortcut at the top (top-k precision under the
+number-of-necessary-features convention is 1.0), so the failure is not a missed truth. It is added
+falsehood, and it is method- and strength-dependent:
+
+- **Gradient saliency fabricates importance robustly:** CNN Saliency false-confidence is 0.684 ± 0.037
+  at p=1.0 and 0.68–0.74 across all strengths, nonzero in all five seeds.
+- **Integrated Gradients and DeepSHAP fabricate importance conditionally:** IG false-confidence at
+  p=1.0 is 0.300 ± 0.274 (nonzero in three of five seeds) — the appealing seed-0 result of a clean
+  endpoint does not generalize; DeepSHAP is clean at p≥0.7 in all seeds but reaches 0.233 ± 0.325
+  at p=0.5 (fails in two of five seeds).
+- **Occlusion has zero false-confidence in every seed and strength**, but this is partly by
+  construction: occlusion removes a feature by permutation, structurally close to the PacketDO
+  ground-truth operator, so its clean record is not independent evidence and is disentangled in E5.
+- **Exactness does not confer faithfulness:** RF TreeSHAP false-confidence at p=1.0 is 0.200 ± 0.274,
+  bimodal across seeds ([0.5, 0.5, 0, 0, 0]); it is 0.5 precisely in the seeds where the forest
+  commits to one of the two correlated shortcuts and 0 when it spreads reliance. Exact Shapley values
+  split credit by the data's correlation structure, so whenever a model commits to one of several
+  redundant shortcuts they fabricate confidence in the unused one.
+
+**Table II. Explainer false-confidence rate (mean +/- sd over 5 seeds) vs planting strength.**
+
+| method | model | p=0.5 | p=0.7 | p=0.9 | p=1.0 |
+|---|---|---|---|---|---|
+| Saliency | ByteCNN | 0.74+/-0.05 | 0.70+/-0.05 | 0.72+/-0.05 | 0.68+/-0.04 |
+| IntegratedGradients | ByteCNN | 0.70+/-0.05 | 0.57+/-0.09 | 0.40+/-0.22 | 0.30+/-0.27 |
+| DeepSHAP | ByteCNN | 0.23+/-0.33 | 0.00+/-0.00 | 0.00+/-0.00 | 0.00+/-0.00 |
+| Occlusion | ByteCNN | 0.00+/-0.00 | 0.00+/-0.00 | 0.00+/-0.00 | 0.00+/-0.00 |
+| Impurity | RF | 0.62+/-0.00 | 0.00+/-0.00 | 0.13+/-0.18 | 0.20+/-0.27 |
+| TreeSHAP | RF | 0.00+/-0.00 | 0.00+/-0.00 | 0.33+/-0.00 | 0.20+/-0.27 |
+
+![Fig 2. False-confidence rate vs planting strength.](figures/fig2_false_confidence.png)
+
+*Fig 2. False-confidence rate (fraction of confidently-attributed fields with interventional
+necessity ~0) vs planting strength, mean ± sd over 5 seeds. Gradient saliency fabricates importance
+robustly (0.68–0.74); Integrated Gradients and DeepSHAP do so conditionally (nonzero in 3/5 and 2/5
+seeds respectively at their worst strength); occlusion is clean (partly by construction, see E5); RF
+TreeSHAP is bimodal, fabricating confidence exactly when the model commits to one of two redundant
+shortcuts.*
+
+**Real data.** On real CIC-IDS2017 flow data the same phenomena appear on a documented natural
+artifact, and they survive a robustness sweep over four RNG seeds and an alternative forest
+configuration (six full-pipeline runs). A random forest (seed-0 test accuracy 0.99789, macro-F1
+0.91494) depends on the destination-port shortcut more than on any other feature: its interventional
+necessity is 0.00434 ± 0.00012 in accuracy (rank 1 of 52) and 0.04792 ± 0.00134 in macro-F1 at
+seed 0, and destination port is the rank-1 accuracy-necessity feature of all 52 in *every* one of
+the six robustness runs (cross-run magnitude 0.00405 ± 0.00140; the ± on the seed-0 value is
+permutation-repeat noise, not seed variance). Intervening on it collapses Brute-Force recall by 37.8
+points (0.980 → 0.602) at seed 0 while leaving the port-spread Port-Scanning class unaffected;
+Brute Force is the largest per-class recall drop in every robustness run, at −35.3 ± 8.1 points
+across the six (range −20.0 to −44.1).
+
+Yet global TreeSHAP ranks destination port only 5th of 52 at seed 0, and never better than 5th in
+any robustness run (rank 5–9 across the six, mean 6.67 ± 1.63; Gini impurity buries it at 13–21).
+Nine of TreeSHAP's top ten features at seed 0 are packet-length statistics whose individual
+accuracy-necessity is below 0.002 — false confidence under the accuracy-only criterion — and at
+least eight of ten are false-confident in every robustness run (8.83 ± 0.41). These same features
+have small but nonzero F1-necessity, so under a joint accuracy-and-F1 criterion the false-confidence
+set shrinks to empty or a single feature (0–1 of 10 across the six runs), and the honest headline is
+the redundancy mechanism: the packet-length family has group necessity 0.201 in accuracy / 0.609 in
+F1 versus at most 0.00064 individually (seed 0), so credit-splitting floods the top of the global
+ranking — the family fills 7–8 of the top-10 SHAP slots in every run. The one robustness run with
+8/10 rather than 9/10 is itself the synthetic benchmark's model-commitment phenomenon on real data:
+at that seed the forest makes one member of the redundant family genuinely necessary, and exactly
+that feature exits the false-confidence set. The single most F1-necessary feature (Fwd IAT Min) is
+TreeSHAP rank 36 of 52 — a blind spot (seed-0 ranking; its position in the top three
+accuracy-necessity features recurs in all six runs, but per-run SHAP ranks below the top ten were
+not retained). The Engelen TCP-appendix flow-construction artifact [@engelen2021troubleshooting] is
+present as expected: its signature (Init_Win_bytes_forward = −1 on benign flows) appears on the
+original dataset and vanishes on the corrected one.
+
+### 5.4 KernelSHAP, LIME, and cost
+
+Adding the two perturbation-based methods the audit lacked: KernelSHAP has zero false-confidence but
+costs 10.8 s per 100 samples; LIME has false-confidence 0.667 at 1.0 s per 100 samples, and the cause
+is instructive — LIME's tabular perturbation standardizes features, and scikit-learn's StandardScaler
+assigns unit scale to zero-variance columns, so LIME perturbs constant protocol fields (a fixed
+destination port, an address prefix) with unit-variance noise and reads the model's response to those
+protocol-impossible inputs as importance. The off-manifold problem this paper identifies reappears
+inside LIME's own perturbation kernel.
+
+## 6. E5: faithfulness verdicts depend on the removal operator
+
+For the p=1.0 ByteCNN, we score each explainer with a standard deletion-AOPC curve under two removal
+operators. Under zero-masking the four methods order IG (0.4776) > Saliency (0.4730) > DeepSHAP
+(0.4724) > Occlusion (0.4629), a spread of 0.0147; under PacketDO they collapse to within 0.0010,
+below the per-seed resampling noise (~0.0058). The Kendall tau between the two orderings is 0.333. The
+robust and load-bearing effect is not the full four-way reordering (the middle ranks differ by less
+than one test-sample count) but a specific demotion: under zero-masking, occlusion — the method with
+zero false-confidence and the best necessity-rank correlation (0.715) — is ranked last, below
+saliency, whose false-confidence is 0.667 and whose necessity correlation is 0.043. The protocol-
+invalid operator manufactures an ordering that inverts the audit evidence, and it does so on
+non-monotone deletion curves computed on impossible packets. Any comparison of traffic-classifier
+explainers that used the zero-masking operator — the field default — therefore inherits an ordering
+that is an artifact of the operator, not a property of the explanations (contribution C4).
+
+**Table III. E5: deletion AOPC of each explainer under zero-mask vs PacketDO removal (p=1.0 ByteCNN; PacketDO mean over 5 resampling seeds). Higher AOPC = steeper deletion = nominally more faithful.**
+
+| explainer | zero-mask AOPC | PacketDO AOPC | false-conf (seed 0) |
+|---|---|---|---|
+| IntegratedGradients | 0.4776 | 0.4882 | 0.0 |
+| Saliency | 0.4730 | 0.4875 | 0.667 |
+| DeepSHAP | 0.4724 | 0.4872 | 0.0 |
+| Occlusion | 0.4629 | 0.4881 | 0.0 |
+*Under zero-mask, Occlusion (false-confidence 0) is ranked last; under PacketDO the four are within 0.001 (below resampling noise ~0.006).*
+
+
+## 7. Discussion and implications
+
+**The failure is added falsehood, not missed truth.** Across every model, dataset, and planting
+strength, the explainers we tested rank a model's genuinely-used feature at or near the top: on the
+synthetic benchmark precision-at-k is 1.0, and on real CIC-IDS2017 the destination-port shortcut that
+the model most depends on is surfaced by per-class SHAP. What the explainers add is confident,
+high-magnitude importance for features the model provably does not use. On the synthetic benchmark
+this shows up as gradient-saliency false-confidence around 0.7; on real data it is starker, because
+the redundant features are numerous: nine of TreeSHAP's global top ten are packet-length statistics
+that are collectively load-bearing but individually near-zero in interventional necessity, and they
+outrank the single most necessary feature. An operator reading the explanation cannot separate the
+feature the model uses from the many it merely could have used. This is a more dangerous failure than
+a low-quality but honest ranking, because the false positives are exactly the plausible-looking
+features that invite a wrong intervention.
+
+**Redundancy makes single-explanation evaluation ill-posed, and exactness does not help.** The
+reason the false positives appear is structural: traffic data encodes the same discriminative signal
+many times over — two headers that both leak the class, a family of correlated flow statistics — so
+a model is free to commit to one encoding and ignore the rest, and different models (or the same
+architecture under a different seed) commit differently. An attribution method that returns a single
+importance vector is answering a question with no unique answer. TreeSHAP makes this precise: it
+computes exact Shapley values, and it still fabricates confidence in an unused shortcut, because
+Shapley values distribute credit according to the correlation structure of the data rather than the
+realized reliance of the model. Exactness of the attribution is orthogonal to its faithfulness when
+the explanandum is not unique. Our redundancy degree R(M) is the property that has to be measured
+before a single-vector explanation can even be interpreted, and it is measurable only by intervention.
+
+**The removal operator is not a detail.** E5 shows that the ranking of explainers by a standard
+deletion-style faithfulness score can invert depending on whether features are removed by
+zero-masking or by PacketDO: under the protocol-invalid zero-mask operator the method with zero
+false-confidence (occlusion) is ranked worst, below a method with high false-confidence, because the
+zero-masked inputs are off-manifold and the resulting deletion curves are not even monotone. Under
+the protocol-valid operator the methods that all correctly identify the model's single true shortcut
+collapse, correctly, to a spread below the resampling noise. Any comparison of explainers for traffic
+classifiers that used the zero-masking operator — the field default — therefore inherits an ordering
+that is an artifact of the operator, not a property of the explanations. The same off-manifold
+mechanism reappears inside an explainer: LIME's false-confidence traces to its perturbation kernel
+sampling constant protocol fields with unit variance (an artifact of standardizing zero-variance
+features), i.e. LIME evaluates the model on impossible packets as part of its own definition.
+
+**Why this matters operationally.** The traffic-classification literature does not stop at displaying
+attributions. Deployed and published systems act on them: xNIDS [@wei2023xnids] generates active
+intrusion-response
+rules from its explanations, ShortcutCatcher [@zhao2026shortcutcatcher] deletes features from the
+training pipeline based on what
+an explainer flags, and analyst-facing tools present attributed features as the justification for an
+alert. A false-confidence feature in that setting is not a mislabeled figure; it is a firewall rule
+keyed on a coincidence, a genuinely-predictive feature wrongly pruned, or an analyst's trust spent on
+the wrong evidence. The interventional reference we provide is the check these pipelines currently
+lack: before an attribution is allowed to drive an action, it can be scored against what the model
+actually depends on.
+
+**What we do not claim.** We do not claim explanations are worthless, nor that any single method is
+uniformly best. Intervention-aligned methods (occlusion, and DeepSHAP at sufficient signal strength)
+are the most faithful in our study, but occlusion's advantage is partly structural — it removes
+features much as our ground-truth operator does, so its clean record is not independent evidence
+(Section 8) — and even it is only as good as the removal
+operator it uses; DeepSHAP fails at weak planting strength in a subset of seeds. The constructive
+reading of our results is that faithfulness for traffic
+classifiers is achievable, but only with a protocol-valid intervention and an explicit accounting of
+redundancy; neither is present in current practice.
+
+## 8. Threats to validity
+
+**Resampling changes the joint distribution.** PacketDO preserves each field's marginal but, by
+sampling it independently of the label, alters its joint distribution with the other fields. A model
+that relied on a genuine correlation between two fields would register a necessity drop that is real
+but not attributable to either field alone. We mitigate this in three ways: interventions resample
+class-agnostically from real values (so every counterfactual is a value the field actually takes); we
+report field-set necessity for the documented redundant families, not only single-field necessity;
+and we include a null-intervention control field in every table, whose necessity stays within the
+noise floor and calibrates what "zero necessity" means for the estimator.
+
+**The model must not be retrained under intervention.** Necessity and sufficiency are properties of a
+fixed model; retraining after an intervention (as remove-and-retrain protocols do
+[@hooker2019benchmark]) measures a
+different model and reintroduces the confound our operator was designed to avoid. We freeze the model
+for all interventions. Where a strength sweep requires different models, each strength is trained once
+before any intervention is applied to it.
+
+**Byte-versus-field granularity.** Byte-level explainers attribute to byte offsets, which we
+aggregate to protocol fields using a fixed header-offset map valid for the canonical no-options
+layout. Two consequences: attributions to bytes shared by two fields, or to variable-length options,
+are aggregated approximately; and where header lengths differ across samples (the misalignment that
+motivates protocol-aware parsing) absolute offsets are not stable. We report results at both byte and
+field granularity and use protocol-parsed offsets for the misaligned cases.
+
+**Cost of exact methods.** KernelSHAP is orders of magnitude slower than the gradient and tree
+methods; we bound it with stratified subsampling and report the measured wall-clock cost, which is
+itself a datapoint for line-rate deployment. This means KernelSHAP results are computed on fewer
+samples than the other methods, with correspondingly wider uncertainty.
+
+**Occlusion is close to the ground-truth operator.** Occlusion removes a feature by permutation,
+structurally similar to PacketDO's resampling. Its strong faithfulness is therefore partly by
+construction, and we state this explicitly rather than presenting occlusion as an independent winner.
+E5 disentangles the effect by scoring occlusion under both the zero-mask and PacketDO operators.
+
+**Synthetic versus real.** The graded-strength results are on synthetic traffic, where ground truth
+is planted and exact. Their external validity rests on the real-data replication (CIC-IDS2017), where
+the false-confidence and blind-spot phenomena reproduce on documented natural artifacts; but the real
+data is flow-level, so the byte-level artifacts (time-to-live, header misalignment, sequence-number
+bytes) that require packet captures are documented and left to a byte-level replication. The
+destination-port and flow-construction artifacts we do measure on real data are the ones representable
+in flow features.
+
+**Table IV. A2 real-data (CIC-IDS2017) destination-port robustness: 4 seeds x default RF (d20/l20) + 2 alt-config runs (d30/l5).**
+
+| run | N(dst) acc-rank /52 | TreeSHAP rank /52 | acc-only FC /10 | Brute-Force recall drop |
+|---|---|---|---|---|
+| default_seed0 | 1 | 5 | 9 | 0.378 |
+| default_seed1 | 1 | 7 | 8 | 0.441 |
+| default_seed2 | 1 | 8 | 9 | 0.382 |
+| default_seed3 | 1 | 9 | 9 | 0.199 |
+| alt_d30l5_seed0 | 1 | 5 | 9 | 0.360 |
+| alt_d30l5_seed1 | 1 | 6 | 9 | 0.356 |
+*Necessity rank 1/52 in all six runs; TreeSHAP never ranks it better than 5th.*
+
+
+**Serializer circularity.** Both PacketDO's validity and the validity checker rely on the same
+protocol serializer. We harden this in two ways: the checker was cross-validated against a
+from-scratch one's-complement (RFC 1071) checksum implementation on adversarial corruptions, and the
+operator's per-field correctness is covered by unit tests; an independent validator (e.g. tshark) is a
+further step. The E1 macro-validity figure is an unweighted average over synthetic fields, not a
+per-packet real-traffic rate, and three fields are valid under zero-masking only because the generator
+left them zero; on real traffic the zero-mask validity would if anything be lower, so the reported gap
+is conservative.
+
+**Seed sensitivity of quantized metrics.** False-confidence is a fraction over a small set of named
+fields and therefore takes quantized values (0, 1/3, 1/2, ...); a small rescaling of attributions can
+move it between levels. We report it as a mean with standard deviation over five seeds and give the
+per-seed values, and we distinguish claims that hold in every seed (saliency false-confidence,
+occlusion's clean record) from those that are seed-contingent (the exact strength at which Integrated
+Gradients or DeepSHAP first fabricates importance). On the real-data side, the six-run sweep spans
+four seeds and two forest configurations; the alternative (deeper) configuration strengthens rather
+than weakens the findings, so the artifact reliance is not an under-fitting effect of the default
+configuration.
+
+## 9. Limitations and future work
+
+Our scope is the faithfulness axis of explanation quality for traffic classifiers, evaluated with a
+protocol-valid intervention. Several adjacent problems, identified in our systematic gap analysis of
+the literature (see the supplementary gap-analysis document accompanying the artifact release), are
+deliberately out of scope and define the research programme this instrument enables:
+
+- **Metric meta-evaluation (diagnosticity).** With planted-truth models in hand, the field's
+  existing faithfulness *metrics* — deletion-AUC, descriptive accuracy, fidelity — can themselves be
+  scored on whether they distinguish faithful from unfaithful explainers. E5 is a first datapoint
+  (the zero-mask AOPC ranking inverts the audit evidence); a systematic diagnosticity study is the
+  natural sequel to this paper.
+
+- **Drift-aware evaluation.** Traffic distributions drift, and an explanation that is faithful at
+  training time may not remain so under deployment drift [@pendlebury2019tesseract]. No
+  temporal-drift-aware explanation evaluation exists for traffic; our interventional reference is
+  recomputable at any time slice and could anchor one.
+
+- **The plausibility axis and analyst studies.** We measure whether explanations reflect the model,
+  not whether they help an analyst [@jacovi2020towards; @alquliti2025evaluating]. A two-axis protocol
+  that scores plausibility and faithfulness separately — and the analyst-grounded human evaluation
+  the security setting ultimately requires — are open, and our ground-truth tables provide the
+  faithfulness half of such a protocol.
+
+- **Adversarial robustness of explainers.** An adversary can manipulate explanations
+  [@slack2020fooling]; whether protocol-valid perturbations can be crafted to mislead traffic-model
+  explainers, and whether interventional auditing detects such manipulation, is unstudied.
+
+- **Full redundancy (Rashomon) enumeration.** Our R(M) counts disjoint sufficient field sets by
+  greedy interventional removal; a complete enumeration of the Rashomon set of equally-performing
+  models and their explanation multiplicity is a larger undertaking that our credit-splitting
+  results motivate.
+
+- **Attention as explanation, and deep sequence models.** The audit covers gradient, SHAP-family,
+  perturbation, and tree methods on a byte-CNN and a random forest. Extending it to
+  attention-based transformer classifiers (e.g. ET-BERT [@lin2022etbert]) — where
+  attention-as-explanation remains contested — and to a byte-level replication on packet-capture
+  datasets with documented misalignment artifacts (ISCX VPN-nonVPN [@drapergil2016vpn]) is future
+  work; both are mechanical extensions of the released benchmark.
+
+## 10. Reproducibility
+
+Every number in this paper traces to a versioned result file produced by a seeded script, and the
+full pipeline runs on commodity hardware (CPU for all tree-model and intervention experiments; a
+consumer laptop GPU suffices for the ByteCNN and the perturbation explainers). The artifact release
+contains: the PacketDO operator with its per-field unit-test suite (42 passed, 1 skipped) and the RFC 1071
+cross-validated validity checker; the synthetic generator and per-strength planted-shortcut datasets
+(seeded); the benchmark driver that trains both model families, computes interventional ground truth,
+runs all eight explainers, and audits them; the E5 operator-sensitivity driver; and the CIC-IDS2017
+real-data pipeline with its six-run robustness harness (approximately 200–220 s per run on CPU;
+1,259 s for all six). Multi-seed aggregation is performed by a script that validates the provenance
+of every per-seed result file (internal seed and strength fields must match the filename; mismatched
+files are excluded and the run exits nonzero) — a guard added after it caught a file-duplication
+fault in an early automated run — and callers are required to check its exit code. The seed-0
+real-data reference run is reproduced float-identically by the robustness harness's first run. All
+datasets are public (CIC-IDS2017 original and Engelen-corrected [@engelen2021troubleshooting]); the
+synthetic traffic is regenerated from a seed. One top-level make target reproduces every table and
+figure from a clean checkout.
+
+## References
+
+References are maintained in `references.bib` (55 entries); citation keys in the text (`[@key]`)
+resolve against it. Key works: [@jacobs2022trustee; @wickramasinghe2025sok; @nascita2025survey;
+@bastings2022shortcuts; @yang2019bam; @adebayo2020debugging; @hooker2019benchmark;
+@rong2022consistent; @samek2017evaluating; @ponraj2026trafficexplainer; @wang2026biasseeker;
+@zhao2026shortcutcatcher; @alquliti2025evaluating; @warnecke2020evaluating;
+@vourganas2026stabilising; @wei2023xnids; @engelen2021troubleshooting; @sharafaldin2018cicids;
+@drapergil2016vpn; @lundberg2017shap; @ribeiro2016lime; @sundararajan2017axiomatic;
+@shrikumar2017deeplift; @zeiler2014visualizing; @lin2022etbert; @geirhos2020shortcut;
+@jacovi2020towards; @slack2020fooling; @pendlebury2019tesseract; @lanvin2022errors; @scapy;
+@kokhlikyan2020captum; @shap-software].
