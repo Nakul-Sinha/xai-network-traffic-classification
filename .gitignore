@@ -9,6 +9,12 @@ __pycache__/
 *.pt
 *.pth
 Experiments/**/data/
+# ISCX VPN pcap dataset (400 MB, staged locally; see realdata/PCAP_DATASET.md to fetch)
+Experiments/realdata/pcap/
+# PDF build artifacts (regenerable from manuscript.md via pandoc + Edge)
+Working/build/
+# run logs
+*.log
 .env
 secrets.md
 

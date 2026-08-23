@@ -1,0 +1,13 @@
+WARNING: No libpcap provider available ! pcap won't be used
+{
+  "n_packets": 2000,
+  "seed": 2,
+  "baseline_valid_rate": 1.0,
+  "zero_mask_macro_valid_rate": 0.2229,
+  "packet_do_macro_valid_rate": 1.0,
+  "zero_mask_violations": {
+    "ip_checksum": 8000,
+    "l4_checksum": 13657
+  },
+  "packet_do_violations": {}
+}

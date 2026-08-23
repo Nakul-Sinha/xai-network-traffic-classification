@@ -44,6 +44,15 @@ def main():
         run("aggregate seeds", ["benchmark/aggregate_seeds.py"])
     if os.path.exists(os.path.join(HERE, "benchmark", "run_e5.py")):
         run("E5 operator sensitivity", ["benchmark/run_e5.py"])
+    if os.path.exists(os.path.join(HERE, "benchmark", "validate_rm.py")):
+        run("R(M) validation (legacy vs corrected)", ["benchmark/validate_rm.py"])
+    # real-data threshold sensitivity (reads a committed a2_port_results.json)
+    if os.path.exists(os.path.join(HERE, "realdata", "results", "a2_port_results.json")):
+        run("real-data FC threshold sensitivity", ["realdata/fc_sensitivity.py"])
+    # byte-level PCAP study runs only if the ISCX subset is staged (see realdata/PCAP_DATASET.md)
+    if os.path.exists(os.path.join(HERE, "realdata", "pcap")) and \
+       any(f.endswith(".pcap") for f in os.listdir(os.path.join(HERE, "realdata", "pcap"))):
+        run("byte-level PCAP study", ["realdata/pcap_bytelevel.py"], cwd=os.path.join(HERE, "realdata"))
     run("figures", ["figures/make_figures.py"])
 
     print("\n=== reproduction complete ===")

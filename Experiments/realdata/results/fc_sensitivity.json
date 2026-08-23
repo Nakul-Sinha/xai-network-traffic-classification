@@ -1,0 +1,101 @@
+{
+  "top10_shap": [
+    "Bwd Packet Length Std",
+    "Bwd Packet Length Mean",
+    "Packet Length Variance",
+    "Packet Length Std",
+    "Destination Port",
+    "Packet Length Mean",
+    "Fwd Packet Length Max",
+    "Bwd Packet Length Max",
+    "Average Packet Size",
+    "Total Length of Fwd Packets"
+  ],
+  "top10_necessity": {
+    "Bwd Packet Length Std": {
+      "N_acc": 0.0006359999999999699,
+      "N_f1": 0.0065982484431251764
+    },
+    "Bwd Packet Length Mean": {
+      "N_acc": 0.00035599999999991194,
+      "N_f1": 0.00880940166531008
+    },
+    "Packet Length Variance": {
+      "N_acc": 0.00022400000000000198,
+      "N_f1": 0.012786618840965436
+    },
+    "Packet Length Std": {
+      "N_acc": 0.00023999999999990695,
+      "N_f1": 0.013829745569882923
+    },
+    "Destination Port": {
+      "N_acc": 0.0042119999999999935,
+      "N_f1": 0.048407151876935006
+    },
+    "Packet Length Mean": {
+      "N_acc": 0.000208000000000097,
+      "N_f1": 0.012943311981585714
+    },
+    "Fwd Packet Length Max": {
+      "N_acc": 0.00018799999999996597,
+      "N_f1": 0.010914580816444253
+    },
+    "Bwd Packet Length Max": {
+      "N_acc": 0.00024799999999991496,
+      "N_f1": 0.005418174297737832
+    },
+    "Average Packet Size": {
+      "N_acc": 0.00031599999999987194,
+      "N_f1": 0.019563825743991514
+    },
+    "Total Length of Fwd Packets": {
+      "N_acc": 0.000348000000000126,
+      "N_f1": 0.012307244114349802
+    }
+  },
+  "eps_acc_list": [
+    0.0005,
+    0.001,
+    0.002,
+    0.005,
+    0.01,
+    0.02,
+    0.05
+  ],
+  "fc_accuracy_only": [
+    8,
+    9,
+    9,
+    10,
+    10,
+    10,
+    10
+  ],
+  "fc_dual_at_f1_0.005": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "eps_f1_list": [
+    0.001,
+    0.002,
+    0.005,
+    0.01,
+    0.02,
+    0.05
+  ],
+  "fc_dual_vs_f1_at_acc_0.002": [
+    0,
+    0,
+    0,
+    3,
+    9,
+    9
+  ],
+  "paper_point_acc_only_at_0.002": 9,
+  "paper_point_dual_at_0.002_0.005": 0
+}

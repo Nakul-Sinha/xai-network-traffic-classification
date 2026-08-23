@@ -68,13 +68,14 @@ def sufficiency(packets, y, evaluate, sampler, fields=CANDIDATE_FIELDS):
     return S
 
 
-def redundancy(packets, y, evaluate, sampler, fields=CANDIDATE_FIELDS, tau=0.10, max_sets=5):
-    """Count disjoint minimal sufficient sets.
+def redundancy_legacy(packets, y, evaluate, sampler, fields=CANDIDATE_FIELDS, tau=0.10, max_sets=5):
+    """DEPRECATED removal-based counter. Kept only for the ablation in validate_rm.py.
 
-    Iteratively: on the packets with all previously-found sets already neutralised, find a
-    minimal set of remaining fields whose PRESENCE the model can still use to stay above
-    chance+tau. Neutralise it, repeat. R = number of such disjoint sets found before the
-    model collapses to chance. R>1 => substitutable shortcuts => attribution ill-posed.
+    Grows a set by single-field removal and stops each set once its removal drops accuracy below
+    chance+tau. This is structurally unable to return R>1: the inner loop drives accuracy to chance
+    before the outer loop can look for a second disjoint set, and for two mutually substitutable
+    shortcuts single-field removal shows no drop, so it returns R=0 (reports LESS redundancy than a
+    committed model). Superseded by the sufficiency-based `redundancy()` below.
     """
     chance = max(np.mean(y == 0), np.mean(y == 1))
     remaining = list(fields)
@@ -109,6 +110,77 @@ def redundancy(packets, y, evaluate, sampler, fields=CANDIDATE_FIELDS, tau=0.10,
         neutral += cur
         remaining = [f for f in remaining if f not in cur]
         if not remaining:
+            break
+    return sets
+
+
+def _keep_only_acc(packets, y, evaluate, sampler, keep, allfields):
+    """Accuracy when ONLY `keep` is intact and every other candidate field is resampled.
+
+    This is set-level sufficiency: it measures whether `keep` alone carries the model while the
+    rest of the candidate fields are randomised from their pooled marginal.
+    """
+    others = [f for f in allfields if f not in keep]
+    return evaluate(_apply(packets, others, sampler), y)
+
+
+def _minimal_sufficient_set(packets, y, evaluate, sampler, pool, allfields, thresh, max_size=4):
+    """Forward-select fields from `pool` until keeping-only-them is sufficient, then prune to minimal.
+    Returns None if no sufficient subset of `pool` exists."""
+    keep = []
+    while len(keep) < max_size:
+        acc = (_keep_only_acc(packets, y, evaluate, sampler, keep, allfields) if keep
+               else evaluate(_apply(packets, allfields, sampler), y))
+        if acc >= thresh:
+            break
+        best, best_acc = None, acc
+        for f in pool:
+            if f in keep:
+                continue
+            a = _keep_only_acc(packets, y, evaluate, sampler, keep + [f], allfields)
+            if a > best_acc + 1e-9:
+                best, best_acc = f, a
+        if best is None:
+            return None
+        keep.append(best)
+    if not keep or _keep_only_acc(packets, y, evaluate, sampler, keep, allfields) < thresh:
+        return None
+    changed = True
+    while changed and len(keep) > 1:
+        changed = False
+        for f in list(keep):
+            trial = [g for g in keep if g != f]
+            if _keep_only_acc(packets, y, evaluate, sampler, trial, allfields) >= thresh:
+                keep = trial
+                changed = True
+                break
+    return keep
+
+
+def redundancy(packets, y, evaluate, sampler, fields=CANDIDATE_FIELDS, suff_frac=0.5, max_sets=5):
+    """Count DISJOINT minimal sufficient field sets (sufficiency-based, corrected).
+
+    A set S is SUFFICIENT if keeping S and resampling every other candidate field retains at least
+    `suff_frac` of the model's above-chance skill:  acc(keep=S) >= chance + suff_frac*(base-chance).
+    We greedily extract a minimal sufficient set, remove its fields from the pool, and search for
+    another DISJOINT one, until none remains. R(M) = number of such sets. R>1 means the model holds
+    substitutable shortcuts, so the target of attribution is non-unique.
+
+    The removal-based `redundancy_legacy` above cannot return R>1; this replaces it. The sufficiency
+    fraction is a disclosed parameter (default 0.5, i.e. a set must recover half the model's skill).
+    """
+    base = evaluate(packets, y)
+    chance = max(np.mean(y == 0), np.mean(y == 1))
+    thresh = chance + suff_frac * (base - chance)
+    pool = list(fields)
+    sets = []
+    for _ in range(max_sets):
+        S = _minimal_sufficient_set(packets, y, evaluate, sampler, pool, fields, thresh)
+        if not S:
+            break
+        sets.append(S)
+        pool = [f for f in pool if f not in S]
+        if not pool:
             break
     return sets
 

@@ -1,0 +1,104 @@
+{
+  "p": 1.0,
+  "n_test": 800,
+  "suff_frac": 0.5,
+  "pl_thresh": 145,
+  "cases": {
+    "commit_oracle(window only)": {
+      "base_acc": 1.0,
+      "legacy_R": 1,
+      "legacy_sets": [
+        [
+          "tcp.window"
+        ]
+      ],
+      "new_R": 1,
+      "new_sets": [
+        [
+          "tcp.window"
+        ]
+      ],
+      "true_R": 1
+    },
+    "ttl_oracle(ttl only)": {
+      "base_acc": 1.0,
+      "legacy_R": 1,
+      "legacy_sets": [
+        [
+          "ip.ttl"
+        ]
+      ],
+      "new_R": 1,
+      "new_sets": [
+        [
+          "ip.ttl"
+        ]
+      ],
+      "true_R": 1
+    },
+    "redundant_oracle(ttl OR window)": {
+      "base_acc": 1.0,
+      "legacy_R": 1,
+      "legacy_sets": [
+        [
+          "ip.ttl",
+          "tcp.window"
+        ]
+      ],
+      "new_R": 1,
+      "new_sets": [
+        [
+          "ip.ttl",
+          "tcp.window"
+        ]
+      ],
+      "true_R": 2
+    },
+    "trained_ByteCNN": {
+      "base_acc": 0.9862,
+      "legacy_R": 1,
+      "legacy_sets": [
+        [
+          "tcp.window"
+        ]
+      ],
+      "new_R": 1,
+      "new_sets": [
+        [
+          "tcp.window"
+        ]
+      ]
+    },
+    "trained_RandomForest": {
+      "base_acc": 1.0,
+      "legacy_R": 1,
+      "legacy_sets": [
+        [
+          "tcp.window"
+        ]
+      ],
+      "new_R": 1,
+      "new_sets": [
+        [
+          "tcp.window"
+        ]
+      ]
+    }
+  },
+  "threshold_sweep": {
+    "commit_oracle": {
+      "0.3": 1,
+      "0.4": 1,
+      "0.5": 1,
+      "0.6": 1,
+      "0.7": 1
+    },
+    "redundant_oracle": {
+      "0.3": 2,
+      "0.4": 2,
+      "0.5": 1,
+      "0.6": 1,
+      "0.7": 1
+    }
+  }
+}
