@@ -1,0 +1,163 @@
+{
+  "task": "facebook(TCP/443) vs ftps(TCP), real ISCX VPN packets; REAL pretrained ET-BERT (linwhitehat/ET-BERT, WWW2022)",
+  "variant": "header",
+  "input_note": "ET-BERT sees IP+TCP+payload header bytes (apples-to-apples with the Section 5.5 Transformer)",
+  "model": "ET-BERT BERT-base (12L/768/12H, vocab 60005), pretrained encoder remapped UER->HF, fine-tuned",
+  "remap_verification": {
+    "encoder_max_abs_diff_vs_uer": 0.01245,
+    "encoder_mean_abs_diff_vs_uer": 0.001104
+  },
+  "mlm_sanity": {
+    "masked": 80,
+    "top1_correct": 46,
+    "top1_acc": 0.575,
+    "top5_acc": 0.65,
+    "note": "native UER MLM head on real packets"
+  },
+  "encoder_load_info": {
+    "pretrained_tensors_loaded": 197,
+    "total_remapped": 197
+  },
+  "n_per_class": [
+    3000,
+    3000
+  ],
+  "n_train": 4200,
+  "n_test": 1800,
+  "n_test_gt": 800,
+  "test_acc": 1.0,
+  "base_acc_gt": 1.0,
+  "N": {
+    "ip.ttl": 0.0,
+    "ip.id": 0.0,
+    "ip.src": 0.055,
+    "ip.dst": 0.0675,
+    "tcp.sport": 0.0,
+    "tcp.dport": 0.0,
+    "tcp.window": 0.0,
+    "tcp.seq": 0.0,
+    "tcp.flags": 0.0,
+    "payload": 0.0
+  },
+  "R": 3,
+  "R_sets": [
+    [
+      "ip.src"
+    ],
+    [
+      "ip.dst"
+    ],
+    [
+      "tcp.dport",
+      "tcp.sport"
+    ]
+  ],
+  "audit": {
+    "Attention": {
+      "rho": 0.701,
+      "precision_at_k": 1.0,
+      "precision_at_adaptive_k": 1.0,
+      "adaptive_k": 2,
+      "false_confidence": 0.714,
+      "blind_spot": 0.0,
+      "top_k": [
+        "ip.dst",
+        "ip.src"
+      ],
+      "named": [
+        "ip.ttl",
+        "ip.id",
+        "ip.src",
+        "ip.dst",
+        "tcp.sport",
+        "tcp.dport",
+        "tcp.flags"
+      ]
+    },
+    "Saliency": {
+      "rho": 0.701,
+      "precision_at_k": 1.0,
+      "precision_at_adaptive_k": 1.0,
+      "adaptive_k": 2,
+      "false_confidence": 0.8,
+      "blind_spot": 0.0,
+      "top_k": [
+        "ip.dst",
+        "ip.src"
+      ],
+      "named": [
+        "ip.ttl",
+        "ip.id",
+        "ip.src",
+        "ip.dst",
+        "tcp.sport",
+        "tcp.dport",
+        "tcp.window",
+        "tcp.seq",
+        "tcp.flags",
+        "payload"
+      ]
+    },
+    "IntegratedGradients": {
+      "rho": 0.683,
+      "precision_at_k": 1.0,
+      "precision_at_adaptive_k": 1.0,
+      "adaptive_k": 2,
+      "false_confidence": 0.6,
+      "blind_spot": 0.0,
+      "top_k": [
+        "ip.src",
+        "ip.dst"
+      ],
+      "named": [
+        "ip.ttl",
+        "ip.src",
+        "ip.dst",
+        "tcp.sport",
+        "tcp.dport"
+      ]
+    }
+  },
+  "attributions_fields": {
+    "Attention": {
+      "ip.ttl": 5.855277066468261,
+      "ip.id": 4.776576318603475,
+      "ip.src": 15.91690323446528,
+      "ip.dst": 16.34336639501271,
+      "tcp.sport": 8.62632787838811,
+      "tcp.dport": 8.64470347261522,
+      "tcp.seq": 2.1450103234383278,
+      "tcp.window": 2.959328543540323,
+      "tcp.flags": 3.662285013240762,
+      "payload": 2.6758295059917145
+    },
+    "Saliency": {
+      "ip.ttl": 61.766166254878044,
+      "ip.id": 39.597854434512556,
+      "ip.src": 108.91003474453464,
+      "ip.dst": 112.3204020340927,
+      "tcp.sport": 66.02504867454991,
+      "tcp.dport": 69.60245533846319,
+      "tcp.seq": 29.268000369425863,
+      "tcp.window": 48.14141003927216,
+      "tcp.flags": 57.130858772434294,
+      "payload": 33.88658036671113
+    },
+    "IntegratedGradients": {
+      "ip.ttl": 50.58693876140751,
+      "ip.id": 12.885180553959799,
+      "ip.src": 148.42143301287433,
+      "ip.dst": 139.49566092446912,
+      "tcp.sport": 104.06521098356461,
+      "tcp.dport": 109.53212109627202,
+      "tcp.seq": 8.188610513232561,
+      "tcp.window": 14.813549785438227,
+      "tcp.flags": 22.42313406741596,
+      "payload": 13.762144119531149
+    }
+  },
+  "window_bytes": 80,
+  "seq_length": 128,
+  "epochs": 3,
+  "seed": 0
+}

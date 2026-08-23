@@ -33,8 +33,9 @@ when a model commits to one of several equivalent shortcuts; and that an explain
 ranking can flip depending on whether features are removed by zero-masking or by PacketDO. On real
 captured packets the operator gap is larger than on synthetic traffic (zero-masking valid for 6% of
 field interventions versus 100% for PacketDO) and the false confidence reproduces; on an
-attention-based Transformer, attention weights are the least faithful explanation of those we audit. We
-release the operator, the benchmark, and the ground-truth tables.
+attention-based Transformer, attention weights are the least faithful explanation of those we audit;
+the false confidence persists on the pretrained ET-BERT, which we find holds three substitutable
+shortcuts (R(M)=3). We release the operator, the benchmark, and the ground-truth tables.
 
 ---
 
@@ -493,8 +494,9 @@ redundancy_legacy returns R=1 for all three oracles, including the redundant one
 cannot exceed one. The trained ByteCNN and RandomForest at p=1.0 both commit to the single sufficient
 set {tcp.window} (R(M)=1); their redundancy is therefore not within a run but across training runs,
 and surfaces as the bimodal TreeSHAP false confidence of Section 5.3. On real traffic the corrected
-estimator does find within-model redundancy: a malware-family classifier holds two disjoint
-sufficient sets, R(M)=2 (Section 5.5), so R>1 is not confined to the constructed oracle.
+estimator does find within-model redundancy: a malware-family ByteCNN holds two disjoint sufficient
+sets and the pretrained ET-BERT holds three (R(M)=2 and R(M)=3, Section 5.5), so R>1 is not confined
+to the constructed oracle.
 
 **Table II. R(M) validation: removal-based (legacy) vs sufficiency-based (corrected) redundancy on models with known structure (p=1.0). The legacy estimator cannot exceed 1; the corrected one recovers the intended R=2 for a redundant model.**
 
@@ -647,6 +649,20 @@ it, and in the direction our audit is built to detect. This is a compact transfo
 scratch, not the pretrained ET-BERT whose fine-tuning pipeline we do not reproduce; it is of the same
 architectural family, and it shows the operator and the audit apply unchanged to self-attention.
 
+We confirm this on the actual pretrained ET-BERT [@lin2022etbert] rather than a from-scratch model. We
+load its released BERT-base weights (verified against the original encoder to a maximum hidden-state
+difference of 0.012), fine-tune on the same facebook-vs-ftps task to perfect accuracy, and feed it the
+same 80-byte header window so the comparison is apples-to-apples. The pretrained model commits to the
+server identity as well (N(ip.dst)=0.068, N(ip.src)=0.055, every other field zero), and here the
+redundancy is stronger still: the corrected estimator returns R(M)=3, three disjoint sufficient sets
+{ip.src}, {ip.dst}, and {tcp.sport, tcp.dport}, so the attribution target is maximally non-unique. All
+three explainers we run on it fabricate importance against this ground truth (Table IV, ET-BERT block):
+attention, saliency, and integrated gradients rank the address fields at the top (precision@k 1.0) yet
+carry false-confidence 0.71, 0.80, and 0.60, attributing importance to fields the model provably does
+not use. The false-confidence phenomenon therefore holds on the exact pretrained transformer the field
+deploys, not only on our from-scratch model. (We audit ET-BERT on the header window for comparability;
+its native payload-burst tokenization is a separate input regime, noted in Section 9.)
+
 Fourth, both findings hold on a second, unrelated corpus. We replicate the byte-level study on
 USTC-TFC2016 [@wang2017malware] as a malware-family task (Miuref vs Geodo, 5,000 real packets per
 class); unlike the raw-IP ISCX subset these captures are Ethernet-framed and are normalized to IP
@@ -660,7 +676,7 @@ shortcuts and the corrected redundancy estimator returns R(M)=2 with disjoint su
 {ip.dst} and {tcp.window}: this is the redundancy of Section 5.2 found in a trained model on real
 traffic rather than a constructed oracle, and it makes the attribution target genuinely non-unique.
 
-**Table IV. Real byte-level audit across two capture corpora (ISCX VPN facebook/ftps; USTC-TFC2016 Miuref/Geodo), single run per corpus. Models: ByteCNN (ISCX accuracy 0.979, USTC 0.864) and, on ISCX, a compact self-attention Transformer (accuracy 1.0). Necessity is measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
+**Table IV. Real byte-level audit across two capture corpora (ISCX VPN facebook/ftps; USTC-TFC2016 Miuref/Geodo), single run per corpus. Models: ByteCNN (ISCX accuracy 0.979, USTC 0.864) and, on ISCX, a compact self-attention Transformer and the pretrained ET-BERT (BERT-base), both at accuracy 1.0. Necessity is measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
 
 | corpus / model | method | rho | precision@k | false-confidence | blind-spot |
 |---|---|---|---|---|---|
@@ -671,6 +687,9 @@ traffic rather than a constructed oracle, and it makes the attribution target ge
 | ISCX / Transformer | Saliency | 0.701 | 1.00 | 0.333 | 0.00 |
 | ISCX / Transformer | Occlusion | 0.975 | 1.00 | 0.000 | 0.00 |
 | ISCX / Transformer | Attention | 0.588 | 0.50 | 0.800 | 0.50 |
+| ISCX / ET-BERT (pretrained) | Attention | 0.701 | 1.00 | 0.714 | 0.00 |
+| ISCX / ET-BERT (pretrained) | Saliency | 0.701 | 1.00 | 0.800 | 0.00 |
+| ISCX / ET-BERT (pretrained) | IntegratedGradients | 0.683 | 1.00 | 0.600 | 0.00 |
 | USTC / ByteCNN | IntegratedGradients | 0.734 | 0.50 | 0.667 | 0.50 |
 | USTC / ByteCNN | Saliency | 0.471 | 0.50 | 0.778 | 0.50 |
 | USTC / ByteCNN | Occlusion | 0.423 | 1.00 | 0.000 | 0.00 |
@@ -886,16 +905,15 @@ deliberately out of scope and define the research programme this instrument enab
   distribution rather than a single trained model, is a larger undertaking that our credit-splitting
   and commitment results motivate.
 
-- **Pretrained transformers and the full artifact catalogue.** The audit now spans a byte-CNN, a
-  random forest, and a compact self-attention Transformer, across synthetic traffic, real flow
-  features, and real packet captures (ISCX VPN-nonVPN [@drapergil2016vpn]); on the Transformer,
-  attention-as-explanation is the least faithful of the methods tested (Section 5.5). Two extensions
-  remain. First, the pretrained ET-BERT [@lin2022etbert], with its burst tokenization and its own
-  fine-tuning pipeline, rather than a Transformer trained from scratch; its tokenization does not use
-  our fixed header-offset map, so this is a genuine extension, not a mechanical one. Second, planting
-  the full catalogue of documented byte-level artifacts (the ISCX Ethernet-misalignment quirk,
-  CIC-IDS-2017 TTL 64/128) as graded ground truth, rather than measuring the artifacts a given capture
-  happens to contain.
+- **ET-BERT's native tokenization and the full artifact catalogue.** The audit spans a byte-CNN, a
+  random forest, a compact self-attention Transformer, and the pretrained ET-BERT [@lin2022etbert],
+  across synthetic traffic, real flow features, and two real packet-capture corpora
+  ([@drapergil2016vpn; @wang2017malware]). Two extensions remain. First, we audit ET-BERT on the
+  header window for comparability; its native payload-burst tokenization is a different input regime
+  that does not use our fixed header-offset map and would need a token-to-field map of its own, so a
+  payload-tokenized audit is a genuine extension. Second, planting the full catalogue of documented
+  byte-level artifacts (the ISCX Ethernet-misalignment quirk, CIC-IDS-2017 TTL 64/128) as graded
+  ground truth, rather than measuring the artifacts a given capture happens to contain.
 
 ## 10. Reproducibility
 
