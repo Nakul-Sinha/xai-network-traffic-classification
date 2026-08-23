@@ -53,6 +53,8 @@ def main():
     if os.path.exists(os.path.join(HERE, "realdata", "pcap")) and \
        any(f.endswith(".pcap") for f in os.listdir(os.path.join(HERE, "realdata", "pcap"))):
         run("byte-level PCAP study", ["realdata/pcap_bytelevel.py"], cwd=os.path.join(HERE, "realdata"))
+        run("transformer audit (attention-as-explanation)", ["realdata/transformer_audit.py"],
+            cwd=os.path.join(HERE, "realdata"))
     run("figures", ["figures/make_figures.py"])
 
     print("\n=== reproduction complete ===")

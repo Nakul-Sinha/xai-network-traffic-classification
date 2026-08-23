@@ -32,7 +32,8 @@ model provably does not use; that even exact Shapley values (TreeSHAP) exhibit t
 when a model commits to one of several equivalent shortcuts; and that an explainer's faithfulness
 ranking can flip depending on whether features are removed by zero-masking or by PacketDO. On real
 captured packets the operator gap is larger than on synthetic traffic (zero-masking valid for 6% of
-field interventions versus 100% for PacketDO) and the false confidence reproduces. We
+field interventions versus 100% for PacketDO) and the false confidence reproduces; on an
+attention-based Transformer, attention weights are the least faithful explanation of those we audit. We
 release the operator, the benchmark, and the ground-truth tables.
 
 ---
@@ -629,13 +630,32 @@ address fields it does. Occlusion is again the cleanest (false-confidence 0.33, 
 to the same by-construction caveat (Section 8). The model's reliance on the server address is itself
 the kind of shortcut the field warns about: it will not transfer to the same applications on new hosts.
 
-**Table IV. Real byte-level audit (ISCX VPN, facebook vs ftps; ByteCNN test accuracy 0.979). Necessity measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
+Third, the phenomenon transfers to an attention-based architecture, though which explainer fails is
+model-dependent. We train a compact byte-level Transformer encoder (two self-attention layers, four
+heads, a CLS token, and learned positional embeddings) on the same task; it reaches perfect test
+accuracy and, by intervention, commits to the same server-identity shortcut (N(ip.src)=0.214,
+N(ip.dst)=0.195, every other field at zero). On this model the gradient and occlusion explainers are
+faithful (integrated gradients and occlusion both reach zero false-confidence, occlusion rank
+correlation 0.975), where integrated gradients had fabricated on the CNN; but attention-as-explanation
+is the least faithful of the four (Table IV, Transformer block): reading the CLS token's attention over
+the input bytes gives false-confidence 0.80 and blind-spot 0.5, attending confidently to fields the
+model provably does not use while missing one of the two address fields it does. The contested practice
+of treating attention weights as an explanation fails here on exactly the architecture that motivates
+it, and in the direction our audit is built to detect. This is a compact transformer trained from
+scratch, not the pretrained ET-BERT whose fine-tuning pipeline we do not reproduce; it is of the same
+architectural family, and it shows the operator and the audit apply unchanged to self-attention.
 
-| method | rho | precision@k | false-confidence | blind-spot |
-|---|---|---|---|---|
-| IntegratedGradients | 0.389 | 0.50 | 0.714 | 0.50 |
-| Saliency | 0.195 | 0.50 | 0.778 | 0.50 |
-| Occlusion | 0.485 | 1.00 | 0.333 | 0.00 |
+**Table IV. Real byte-level audit (ISCX VPN, facebook vs ftps; single run, seed 0). ByteCNN (test accuracy 0.979) and a compact byte-level Transformer (self-attention, test accuracy 1.0). Necessity is measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
+
+| model | method | rho | precision@k | false-confidence | blind-spot |
+|---|---|---|---|---|---|
+| ByteCNN | IntegratedGradients | 0.389 | 0.50 | 0.714 | 0.50 |
+| ByteCNN | Saliency | 0.195 | 0.50 | 0.778 | 0.50 |
+| ByteCNN | Occlusion | 0.485 | 1.00 | 0.333 | 0.00 |
+| Transformer | IntegratedGradients | 0.683 | 1.00 | 0.000 | 0.00 |
+| Transformer | Saliency | 0.701 | 1.00 | 0.333 | 0.00 |
+| Transformer | Occlusion | 0.975 | 1.00 | 0.000 | 0.00 |
+| Transformer | Attention | 0.588 | 0.50 | 0.800 | 0.50 |
 
 ## 6. E5: faithfulness verdicts depend on the removal operator
 
@@ -847,12 +867,16 @@ deliberately out of scope and define the research programme this instrument enab
   distribution rather than a single trained model, is a larger undertaking that our credit-splitting
   and commitment results motivate.
 
-- **Attention as explanation, and deep sequence models.** The audit covers gradient, SHAP-family,
-  perturbation, and tree methods on a byte-CNN and a random forest. Extending it to
-  attention-based transformer classifiers (e.g. ET-BERT [@lin2022etbert]), where
-  attention-as-explanation remains contested, and to a byte-level replication on packet-capture
-  datasets with documented misalignment artifacts (ISCX VPN-nonVPN [@drapergil2016vpn]) is future
-  work; both are mechanical extensions of the released benchmark.
+- **Pretrained transformers and the full artifact catalogue.** The audit now spans a byte-CNN, a
+  random forest, and a compact self-attention Transformer, across synthetic traffic, real flow
+  features, and real packet captures (ISCX VPN-nonVPN [@drapergil2016vpn]); on the Transformer,
+  attention-as-explanation is the least faithful of the methods tested (Section 5.5). Two extensions
+  remain. First, the pretrained ET-BERT [@lin2022etbert], with its burst tokenization and its own
+  fine-tuning pipeline, rather than a Transformer trained from scratch; its tokenization does not use
+  our fixed header-offset map, so this is a genuine extension, not a mechanical one. Second, planting
+  the full catalogue of documented byte-level artifacts (the ISCX Ethernet-misalignment quirk,
+  CIC-IDS-2017 TTL 64/128) as graded ground truth, rather than measuring the artifacts a given capture
+  happens to contain.
 
 ## 10. Reproducibility
 

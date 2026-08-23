@@ -76,4 +76,13 @@ Auditors were blind to authorship and verified against code + result files, not 
   "for the first time" softened). PDF regenerated (19 pp, 4 figures embedded, IEEE cites, 39-entry bib).
   Manuscript 9.36k words, 0 em dashes, Tables I-VI, Figs 1-4.
 
-## ALL PHASES COMPLETE. Uncommitted on disk; awaiting user go-ahead to commit/push.
+## ALL PHASES COMPLETE. Committed a44f1f8 + pushed to main.
+
+## Follow-up: ET-BERT-style transformer test (user-requested)
+- realdata/transformer_audit.py: compact byte-level self-attention Transformer (2 layers, 4 heads,
+  d=64, CLS) on the same real ISCX facebook-vs-ftps task. Test acc 1.0; same server-IP shortcut
+  (N(ip.src)=0.214, N(ip.dst)=0.195). Audit incl. attention-as-explanation: IG/Occlusion faithful
+  (FC 0.0), but ATTENTION is least faithful (FC 0.80, precision@k 0.5, blind 0.5). Which explainer
+  fails is model-dependent (IG dirty on CNN, clean on transformer). Integrated into SS5.5 (Table IV
+  extended with Transformer block), abstract, SS9 future-work. Not the pretrained ET-BERT (labelled).
+  PDF regenerated (23 pp, 9.72k words).
