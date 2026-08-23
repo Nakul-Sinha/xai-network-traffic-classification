@@ -89,7 +89,15 @@ Auditors were blind to authorship and verified against code + result files, not 
 
 ## Phase F: post-review completion (2026-08-24) - IN PROGRESS
 Goal: complete the 3 remaining tasks end to end (see phase.md section 9).
-- F1 pretrained ET-BERT audit: RUNNING (Opus agent, Kaggle GPU). Deliverable Experiments/etbert/ + DRAFT.md.
-- F2 second byte-level dataset: RUNNING (Opus agent, local GPU). Deliverable Experiments/realdata/<ds>_* + DRAFT.md.
-- F3 LaTeX/IEEEtran camera-ready: QUEUED (after F1+F2 integrated). Deliverable Working/paper-tex/.
-Execution: F1 || F2 (independent, separate GPUs); orchestrator integrates DRAFTs serially; F3 last.
+- F1 pretrained ET-BERT audit: DONE (commit f46c4d2). Real ET-BERT (UER->HF remap verified 0.012),
+  fine-tuned acc 1.0. Server-IP shortcut; R(M)=3 {ip.src},{ip.dst},{tcp.sport,tcp.dport} -- strongest
+  real-data redundancy. False-confidence: attention 0.71 / saliency 0.80 / IG 0.60. Integrated SS5.5
+  (Table IV ET-BERT block) + SS5.2 + abstract + SS9. Weights git-ignored; etbert/README documents fetch.
+- F2 second byte-level dataset: DONE (commit 42a9563). USTC-TFC2016 malware (Miuref vs Geodo). Operator
+  gap 15.5% vs 100%; gradient FC 0.67-0.78; ByteCNN acc 0.864; R(M)=2 {ip.dst},{tcp.window} in the wild.
+- F3 LaTeX/IEEEtran camera-ready: DONE. Working/paper-tex/paper.pdf compiled (14 pp two-column IEEEtran,
+  refs [1]-[37], 0 undefined/overfull; Table IV as full-width table*). BUILD.md documents rebuild.
+- Verification (Opus agent): DONE. 0 mismatches, 0 consistency FAILs across all ET-BERT/USTC/Table IV numbers.
+Manuscript now 25 pp / 10.26k words, Tables I-VI, Figs 1-4, 0 em dashes.
+
+## PHASE F COMPLETE. All three post-review tasks done end to end. Reading PDF (25pp) + IEEEtran PDF (14pp).
