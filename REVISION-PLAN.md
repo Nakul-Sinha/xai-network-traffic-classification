@@ -86,3 +86,10 @@ Auditors were blind to authorship and verified against code + result files, not 
   fails is model-dependent (IG dirty on CNN, clean on transformer). Integrated into SS5.5 (Table IV
   extended with Transformer block), abstract, SS9 future-work. Not the pretrained ET-BERT (labelled).
   PDF regenerated (23 pp, 9.72k words).
+
+## Phase F: post-review completion (2026-08-24) - IN PROGRESS
+Goal: complete the 3 remaining tasks end to end (see phase.md section 9).
+- F1 pretrained ET-BERT audit: RUNNING (Opus agent, Kaggle GPU). Deliverable Experiments/etbert/ + DRAFT.md.
+- F2 second byte-level dataset: RUNNING (Opus agent, local GPU). Deliverable Experiments/realdata/<ds>_* + DRAFT.md.
+- F3 LaTeX/IEEEtran camera-ready: QUEUED (after F1+F2 integrated). Deliverable Working/paper-tex/.
+Execution: F1 || F2 (independent, separate GPUs); orchestrator integrates DRAFTs serially; F3 last.

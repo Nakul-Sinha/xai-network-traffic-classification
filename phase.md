@@ -105,3 +105,26 @@ Broad-program documents remain in this repo: analysis/00-10 (corpus, verified cl
 differentiation incl. the two documented novelty corrections in 08, 17-gap distillation in 05),
 poc/ (working demonstration). The broad-program plan this document replaces is preserved at
 paper/phase-broad-program.md.
+
+## 9. Phase F: post-review completion (current goal, 2026-08-24)
+
+After the adversarial audit and revision (see REVISION-PLAN.md), three tasks remain to make the
+paper fully submission-ready. Goal: complete all three end to end.
+
+- **F1. Pretrained ET-BERT.** Add, alongside the from-scratch transformer of Section 5.5, the actual
+  pretrained ET-BERT (linwhitehat/ET-BERT): obtain the released weights, fine-tune on a traffic task,
+  extract attention and gradient attributions, and audit them against PacketDO interventional
+  necessity. Deliverable: Experiments/etbert/ results + a Section 5.5 addendum reporting whether the
+  attention-unfaithfulness finding holds on the real pretrained model. Use Kaggle GPU if the 6 GB
+  local card is insufficient. INDEPENDENT of F2.
+- **F2. Second byte-level dataset.** Add a second real packet-capture dataset to the byte-level audit
+  (Section 5.5) to broaden external validity beyond ISCX VPN (e.g. USTC-TFC2016, ISCX-Tor, or a
+  non-VPN ISCX split). Deliverable: Experiments/realdata results for the new dataset + a Section 5.5
+  addendum. INDEPENDENT of F1.
+- **F3. LaTeX / IEEEtran camera-ready.** Convert the final manuscript.md to two-column IEEEtran
+  LaTeX, render references.bib, compile to PDF. Deliverable: Working/paper-tex/ (main.tex,
+  IEEEtran.cls, refs.bib, compiled paper.pdf). DEPENDS on F1 + F2 (it converts the final manuscript).
+
+Execution: F1 and F2 run in parallel (independent, Opus 4.8 agents); F3 runs after both are
+integrated. The orchestrator integrates each agent's results and draft prose into manuscript.md
+serially to avoid write conflicts, then regenerates the reading-draft PDF and commits.
