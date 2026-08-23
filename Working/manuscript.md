@@ -25,8 +25,8 @@ ground truth for traffic classifiers (necessity,
 sufficiency, and a redundancy degree R(M) measured by intervention, not assumed) and audit eight
 widely used attribution methods (integrated gradients, gradient saliency, DeepSHAP, occlusion,
 KernelSHAP, LIME, TreeSHAP, and impurity) against it, on models with planted shortcuts of graded
-strength, on flow-level real data with documented artifacts, and on real packet captures at the byte
-level. We find that explainers reliably rank a model's
+strength, on flow-level real data with documented artifacts, and on two real packet-capture corpora
+at the byte level. We find that explainers reliably rank a model's
 true shortcut at the top yet simultaneously attribute high importance to redundant features the
 model provably does not use; that even exact Shapley values (TreeSHAP) exhibit this false confidence
 when a model commits to one of several equivalent shortcuts; and that an explainer's faithfulness
@@ -492,7 +492,9 @@ single joint set {ip.ttl, tcp.window} at the stricter default 0.5. The removal-b
 redundancy_legacy returns R=1 for all three oracles, including the redundant one, confirming that it
 cannot exceed one. The trained ByteCNN and RandomForest at p=1.0 both commit to the single sufficient
 set {tcp.window} (R(M)=1); their redundancy is therefore not within a run but across training runs,
-and surfaces as the bimodal TreeSHAP false confidence of Section 5.3.
+and surfaces as the bimodal TreeSHAP false confidence of Section 5.3. On real traffic the corrected
+estimator does find within-model redundancy: a malware-family classifier holds two disjoint
+sufficient sets, R(M)=2 (Section 5.5), so R>1 is not confined to the constructed oracle.
 
 **Table II. R(M) validation: removal-based (legacy) vs sufficiency-based (corrected) redundancy on models with known structure (p=1.0). The legacy estimator cannot exceed 1; the corrected one recovers the intended R=2 for a redundant model.**
 
@@ -645,17 +647,33 @@ it, and in the direction our audit is built to detect. This is a compact transfo
 scratch, not the pretrained ET-BERT whose fine-tuning pipeline we do not reproduce; it is of the same
 architectural family, and it shows the operator and the audit apply unchanged to self-attention.
 
-**Table IV. Real byte-level audit (ISCX VPN, facebook vs ftps; single run, seed 0). ByteCNN (test accuracy 0.979) and a compact byte-level Transformer (self-attention, test accuracy 1.0). Necessity is measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
+Fourth, both findings hold on a second, unrelated corpus. We replicate the byte-level study on
+USTC-TFC2016 [@wang2017malware] as a malware-family task (Miuref vs Geodo, 5,000 real packets per
+class); unlike the raw-IP ISCX subset these captures are Ethernet-framed and are normalized to IP
+before the identical pipeline runs. The operator gap holds and is again large: zero-masking is valid
+for only 15.5% of field interventions (breaking the IP checksum in 48,643 cases and the transport
+checksum in 72,133) versus 100% for PacketDO. The gradient explainers again fabricate importance
+(integrated gradients and saliency false-confidence 0.67 and 0.78 against a ByteCNN, test accuracy
+0.864, that commits to the destination address, N(ip.dst)=0.130, while confidently ranking the unused
+IP TTL, N=0.026, near the top), and occlusion is again clean. Here the model holds two substitutable
+shortcuts and the corrected redundancy estimator returns R(M)=2 with disjoint sufficient sets
+{ip.dst} and {tcp.window}: this is the redundancy of Section 5.2 found in a trained model on real
+traffic rather than a constructed oracle, and it makes the attribution target genuinely non-unique.
 
-| model | method | rho | precision@k | false-confidence | blind-spot |
+**Table IV. Real byte-level audit across two capture corpora (ISCX VPN facebook/ftps; USTC-TFC2016 Miuref/Geodo), single run per corpus. Models: ByteCNN (ISCX accuracy 0.979, USTC 0.864) and, on ISCX, a compact self-attention Transformer (accuracy 1.0). Necessity is measured by PacketDO on the real packets; false-confidence and blind-spot are computed against it.**
+
+| corpus / model | method | rho | precision@k | false-confidence | blind-spot |
 |---|---|---|---|---|---|
-| ByteCNN | IntegratedGradients | 0.389 | 0.50 | 0.714 | 0.50 |
-| ByteCNN | Saliency | 0.195 | 0.50 | 0.778 | 0.50 |
-| ByteCNN | Occlusion | 0.485 | 1.00 | 0.333 | 0.00 |
-| Transformer | IntegratedGradients | 0.683 | 1.00 | 0.000 | 0.00 |
-| Transformer | Saliency | 0.701 | 1.00 | 0.333 | 0.00 |
-| Transformer | Occlusion | 0.975 | 1.00 | 0.000 | 0.00 |
-| Transformer | Attention | 0.588 | 0.50 | 0.800 | 0.50 |
+| ISCX / ByteCNN | IntegratedGradients | 0.389 | 0.50 | 0.714 | 0.50 |
+| ISCX / ByteCNN | Saliency | 0.195 | 0.50 | 0.778 | 0.50 |
+| ISCX / ByteCNN | Occlusion | 0.485 | 1.00 | 0.333 | 0.00 |
+| ISCX / Transformer | IntegratedGradients | 0.683 | 1.00 | 0.000 | 0.00 |
+| ISCX / Transformer | Saliency | 0.701 | 1.00 | 0.333 | 0.00 |
+| ISCX / Transformer | Occlusion | 0.975 | 1.00 | 0.000 | 0.00 |
+| ISCX / Transformer | Attention | 0.588 | 0.50 | 0.800 | 0.50 |
+| USTC / ByteCNN | IntegratedGradients | 0.734 | 0.50 | 0.667 | 0.50 |
+| USTC / ByteCNN | Saliency | 0.471 | 0.50 | 0.778 | 0.50 |
+| USTC / ByteCNN | Occlusion | 0.423 | 1.00 | 0.000 | 0.00 |
 
 ## 6. E5: faithfulness verdicts depend on the removal operator
 
@@ -792,7 +810,8 @@ robustness to genuinely malformed inputs is a separate question we do not addres
 **Synthetic versus real.** The graded-strength results are on synthetic traffic, where ground truth
 is planted and exact. Their external validity rests on two real-data replications: a flow-level one
 (CIC-IDS2017, Section 5.3), where the false-confidence and blind-spot phenomena reproduce on documented
-natural artifacts, and a byte-level one on real packet captures (ISCX VPN, Section 5.5), where the
+natural artifacts, and byte-level ones on two real packet-capture corpora (ISCX VPN app traffic and
+USTC-TFC2016 malware traffic, Section 5.5), where the
 operator gap (zero-mask 6.2% vs PacketDO 100% on option-laden real packets) and the explainer
 false-confidence (0.71-0.78 for gradient methods) both reproduce and are in fact stronger than on
 synthetic traffic. This addresses the concern that PacketDO's validity or the audit result might be

@@ -1,0 +1,213 @@
+{
+  "dataset": "USTC-TFC2016 (Wang et al., ICOIN 2017)",
+  "task": "Miuref vs Geodo (malware-family classification), real USTC-TFC2016 packets",
+  "link_layer": "Ethernet-framed, normalised to IP via bytes(pk[IP])",
+  "classes": {
+    "0": "Miuref",
+    "1": "Geodo"
+  },
+  "n_per_class": [
+    5000,
+    5000
+  ],
+  "n_test_gt": 800,
+  "cnn_test_acc": 0.8638,
+  "e1_real": {
+    "baseline_valid_rate": 1.0,
+    "zero_mask_macro_valid_rate": 0.1551,
+    "packet_do_macro_valid_rate": 1.0,
+    "zero_mask_violations": {
+      "ip_checksum": 48643,
+      "l4_checksum": 72133
+    },
+    "packet_do_violations": {},
+    "per_field": {
+      "ip.ttl": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "ip.tos": {
+        "n": 10000,
+        "zero_mask_valid_rate": 1.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "ip.id": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "ip.flags": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.1357,
+        "packet_do_valid_rate": 1.0
+      },
+      "ip.src": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "ip.dst": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.sport": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.dport": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.seq": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.ack": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.7085,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.flags": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      },
+      "tcp.window": {
+        "n": 10000,
+        "zero_mask_valid_rate": 0.1719,
+        "packet_do_valid_rate": 1.0
+      },
+      "payload": {
+        "n": 937,
+        "zero_mask_valid_rate": 0.0,
+        "packet_do_valid_rate": 1.0
+      }
+    }
+  },
+  "base_acc_gt": 0.8638,
+  "N": {
+    "ip.ttl": 0.0262,
+    "ip.id": 0.01,
+    "ip.src": 0.01,
+    "ip.dst": 0.13,
+    "tcp.sport": 0.0025,
+    "tcp.dport": 0.0038,
+    "tcp.window": 0.0938,
+    "tcp.seq": 0.0025,
+    "tcp.flags": 0.0,
+    "payload": 0.0
+  },
+  "R": 2,
+  "R_sets": [
+    [
+      "ip.dst"
+    ],
+    [
+      "tcp.window"
+    ]
+  ],
+  "audit": {
+    "IntegratedGradients": {
+      "rho": 0.734,
+      "precision_at_k": 0.5,
+      "precision_at_adaptive_k": 0.5,
+      "adaptive_k": 2,
+      "false_confidence": 0.667,
+      "blind_spot": 0.5,
+      "top_k": [
+        "ip.ttl",
+        "ip.dst"
+      ],
+      "named": [
+        "ip.ttl",
+        "ip.dst",
+        "tcp.sport",
+        "tcp.dport",
+        "tcp.window",
+        "tcp.seq"
+      ]
+    },
+    "Saliency": {
+      "rho": 0.471,
+      "precision_at_k": 0.5,
+      "precision_at_adaptive_k": 0.5,
+      "adaptive_k": 2,
+      "false_confidence": 0.778,
+      "blind_spot": 0.5,
+      "top_k": [
+        "ip.ttl",
+        "tcp.window"
+      ],
+      "named": [
+        "ip.ttl",
+        "ip.src",
+        "ip.dst",
+        "tcp.sport",
+        "tcp.dport",
+        "tcp.window",
+        "tcp.seq",
+        "tcp.flags",
+        "payload"
+      ]
+    },
+    "Occlusion": {
+      "rho": 0.423,
+      "precision_at_k": 1.0,
+      "precision_at_adaptive_k": 1.0,
+      "adaptive_k": 2,
+      "false_confidence": 0.0,
+      "blind_spot": 0.0,
+      "top_k": [
+        "ip.dst",
+        "tcp.window"
+      ],
+      "named": [
+        "ip.dst",
+        "tcp.window"
+      ]
+    }
+  },
+  "attributions_fields": {
+    "IntegratedGradients": {
+      "ip.ttl": 0.2653912305831909,
+      "ip.id": 0.03505200892686844,
+      "ip.src": 0.04775107651948929,
+      "ip.dst": 0.16606439650058746,
+      "tcp.sport": 0.11085579544305801,
+      "tcp.dport": 0.05835098773241043,
+      "tcp.seq": 0.07599692791700363,
+      "tcp.window": 0.1409168839454651,
+      "tcp.flags": 0.003345322096720338,
+      "payload": 0.023021213710308075
+    },
+    "Saliency": {
+      "ip.ttl": 0.6325294971466064,
+      "ip.id": 0.12020433694124222,
+      "ip.src": 0.20149287581443787,
+      "ip.dst": 0.2988240122795105,
+      "tcp.sport": 0.18124061822891235,
+      "tcp.dport": 0.13565638661384583,
+      "tcp.seq": 0.13579833507537842,
+      "tcp.window": 0.3741540014743805,
+      "tcp.flags": 0.17402417957782745,
+      "payload": 0.21056708693504333
+    },
+    "Occlusion": {
+      "ip.ttl": -0.0012499999999999734,
+      "ip.id": 0.0031250000000000444,
+      "ip.src": 0.0025000000000000022,
+      "ip.dst": 0.026562500000000017,
+      "tcp.sport": 0.0025000000000000022,
+      "tcp.dport": 0.0037499999999999756,
+      "tcp.seq": 0.0018750000000000433,
+      "tcp.window": 0.020625000000000004,
+      "tcp.flags": 0.0,
+      "payload": 0.0034375000000000213
+    }
+  }
+}

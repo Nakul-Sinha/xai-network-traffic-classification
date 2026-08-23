@@ -11,6 +11,8 @@ __pycache__/
 Experiments/**/data/
 # ISCX VPN pcap dataset (400 MB, staged locally; see realdata/PCAP_DATASET.md to fetch)
 Experiments/realdata/pcap/
+# USTC-TFC2016 pcap dataset (staged locally; see realdata/ustc_DATASET.md to fetch)
+Experiments/realdata/ustc/
 # PDF build artifacts (regenerable from manuscript.md via pandoc + Edge)
 Working/build/
 # run logs
@@ -23,3 +25,7 @@ secrets.md
 Experiments/benchmark/data/
 Experiments/**/models/*.pt
 Experiments/**/models/*.pkl
+# ET-BERT large artifacts (weights + cloned upstream repo); commit only small results/code
+*.bin
+Experiments/etbert/repo/
+Experiments/etbert/pretrained_model.bin
